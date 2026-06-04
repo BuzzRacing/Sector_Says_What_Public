@@ -313,7 +313,6 @@ other product/service names remain the property of their owners. See `NOTICE.md`
 
 ## Credits
 
-- Lead and concept: ABomb / BuzzRacing.
 - Telemetry: iRacing SDK via `pyirsdk`.
 - Commentary AI: OpenAI-compatible LLMs.
 - TTS: Inworld.
