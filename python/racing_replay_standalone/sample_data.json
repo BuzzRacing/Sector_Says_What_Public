@@ -3,7 +3,7 @@
   "track_config": "Full Course",
   "total_laps": 12,
   "drivers": [
-    { "name": "Anthony Bomb",     "car_number": "42", "race_start_pos": 5, "race_finish_pos": 2, "race_avg_lap": 825000, "race_laps": 12, "reason_out": "Running", "is_us": true,  "livery": { "color1": "ff9100" } },
+    { "name": "Focus Driver",     "car_number": "42", "race_start_pos": 5, "race_finish_pos": 2, "race_avg_lap": 825000, "race_laps": 12, "reason_out": "Running", "is_us": true,  "livery": { "color1": "ff9100" } },
     { "name": "Lars Mikkelsen",   "car_number": "7",  "race_start_pos": 0, "race_finish_pos": 0, "race_avg_lap": 819500, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "1e88e5" } },
     { "name": "Diego Fernandez",  "car_number": "11", "race_start_pos": 1, "race_finish_pos": 1, "race_avg_lap": 821300, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "e53935" } },
     { "name": "Yuki Tanaka",      "car_number": "23", "race_start_pos": 2, "race_finish_pos": 4, "race_avg_lap": 826800, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "fdd835" } },

@@ -248,7 +248,7 @@ def start_race(
 
     # SessionLapsRemain returns 32767 (INT16_MAX) for unlimited/time-limited
     # AI races — store it as 0 so downstream "X of Y laps" math behaves.
-    # See invariant 1.8 in CLAUDE.md.
+    # See README "Critical Invariants" for the INT16_MAX lap clamp.
     try:
         if int(total_laps or 0) > 999:
             total_laps = 0

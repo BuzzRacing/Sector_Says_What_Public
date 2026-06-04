@@ -1659,7 +1659,7 @@ function populatePowerUnit() {
   document.getElementById("pu-model").value = ai.model || "gpt-4o-mini";
 
   // Local LLM fields
-  document.getElementById("pu-local-url").value = loc.base_url || "http://192.168.1.100:1234/v1";
+  document.getElementById("pu-local-url").value = loc.base_url || "http://localhost:1234/v1";
   document.getElementById("pu-local-key").value = loc.api_key || "not-needed";
   document.getElementById("pu-local-model").value = loc.model || "local-model";
 

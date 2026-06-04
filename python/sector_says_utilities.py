@@ -1659,7 +1659,7 @@ def export_weekend_info(ir_conn=None):
         pass
 
 # ─── Motor-racing speech translation guide ────────────────────────
-# Layer 3 of the broadcast-speech stack (see CLAUDE.md invariant 1.4
+# Layer 3 of the broadcast-speech stack (see README "Critical Invariants"
 # vocabulary):
 #   1. normalize_telemetry_for_ai  — pre-LLM, rewrites the data block
 #   2. SYSTEM_GROUND_RULES         — tells the LLM the convention

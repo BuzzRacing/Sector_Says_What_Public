@@ -95,8 +95,8 @@ audio when you write in broadcast form to begin with):
 """
 
 
-# Anti-fabrication layer 3 (post-hoc string sanitiser, see CLAUDE.md
-# invariant 1.4). The LLM occasionally emits a meta-reply when it gets
+# Anti-fabrication layer 3 (post-hoc string sanitizer; see README
+# "Critical Invariants"). The LLM occasionally emits a meta-reply when it gets
 # a malformed prompt — e.g. "Please provide the data block for the
 # commentary." — which then sails into TTS as if it were race colour.
 # Catch known failure prefixes here so they never reach the broadcast.

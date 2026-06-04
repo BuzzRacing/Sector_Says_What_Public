@@ -294,8 +294,8 @@ def replay_list():
     Returns one row per race with per-driver lookups (winner / owner /
     DOTD) flattened plus their iRacing cust_ids so the frontend can
     render headshots from the iracing_cache. dotd_score on races is
-    the WINNER'S vote-share percent (e.g. 59.9) — see invariant 1.x
-    in CLAUDE.md and the dotd_percent column on race_drivers.
+    the WINNER'S vote-share percent (e.g. 59.9) — see the README
+    critical invariants and the dotd_percent column on race_drivers.
     """
     result = race_db.execute_readonly(
         """
