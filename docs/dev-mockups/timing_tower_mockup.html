@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Timing Tower Mockup — Sector Says What</title>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-display: 'Audiowide', 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --ssw-gold: #d4af37;
+    --ssw-gold-glow: rgba(212,175,55,0.5);
+    --text-dim: rgba(255,255,255,0.35);
+    --tower-row-h: 32px;
+    --tower-width: 260px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    color: #fff;
+    font-family: var(--font-body);
+    display: flex;
+    gap: 40px;
+    padding: 30px;
+    min-height: 100vh;
+  }
+
+  /* ── TIMING TOWER ─────────────────────────── */
+  .timing-tower {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: var(--tower-width);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  .tower-lap-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    background: #111;
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .tower-lap-label {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-right: 8px;
+  }
+
+  .tower-lap-nums {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .tower-lap-nums .lap-dim { color: var(--text-dim); }
+
+  /* Row container - positioned absolutely for animation */
+  .tower-body {
+    position: relative;
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tower-row {
+    display: flex;
+    align-items: stretch;
+    height: var(--tower-row-h);
+    background: rgba(0, 0, 0, 0.85);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.3s ease;
+    will-change: top;
+  }
+
+  .tower-pos {
+    width: 32px;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 900;
+    color: #000;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .tower-color {
+    width: 4px;
+    min-width: 4px;
+    flex-shrink: 0;
+  }
+
+  .tower-name {
+    width: 90px;
+    min-width: 90px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 8px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .tower-pit-chip {
+    display: inline-block;
+    padding: 1px 4px;
+    background: rgba(255, 184, 77, 0.18);
+    color: #ffb84d;
+    border: 1px solid rgba(255, 184, 77, 0.55);
+    border-radius: 3px;
+    font-family: var(--font-display);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+  }
+
+  .tower-gap {
+    width: 68px;
+    min-width: 68px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 5px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 3px;
+    margin: 4px 0 4px 0;
+    white-space: nowrap;
+  }
+
+  .tower-gap.leader {
+    color: #fff;
+    background: rgba(212, 175, 55, 0.30);
+  }
+
+  .tower-gap.pit-gap {
+    color: #ffb84d;
+  }
+
+  /* Grid delta column */
+  .tower-delta {
+    width: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .tower-delta.up   { color: #00e676; }
+  .tower-delta.down { color: #ff4646; }
+  .tower-delta.same { color: rgba(255,255,255,0.25); }
+
+  /* Focus driver row */
+  .tower-row.focus-driver {
+    background: rgba(212,175,55,0.12);
+    border-left: 2px solid var(--ssw-gold);
+    box-shadow: inset 0 0 12px rgba(212,175,55,0.08);
+  }
+
+  /* Separator */
+  .tower-sep {
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--ssw-gold-glow), transparent);
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* OUT row */
+  .tower-row.out-row { opacity: 0.4; background: rgba(0,0,0,0.7); }
+  .tower-out-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  /* ── FLASH ANIMATIONS ─────────────────────── */
+  @keyframes flashGreen {
+    0%   { background: rgba(0, 230, 118, 0.55); }
+    30%  { background: rgba(0, 230, 118, 0.35); }
+    100% { background: rgba(0, 0, 0, 0.85); }
+  }
+  @keyframes flashRed {
+    0%   { background: rgba(255, 70, 70, 0.55); }
+    30%  { background: rgba(255, 70, 70, 0.35); }
+    100% { background: rgba(0, 0, 0, 0.85); }
+  }
+  @keyframes flashGreenFD {
+    0%   { background: rgba(0, 230, 118, 0.55); }
+    30%  { background: rgba(0, 230, 118, 0.35); }
+    100% { background: rgba(212,175,55,0.12); }
+  }
+  @keyframes flashRedFD {
+    0%   { background: rgba(255, 70, 70, 0.55); }
+    30%  { background: rgba(255, 70, 70, 0.35); }
+    100% { background: rgba(212,175,55,0.12); }
+  }
+
+  .tower-row.pos-gained { animation: flashGreen 2s ease-out forwards; }
+  .tower-row.pos-lost   { animation: flashRed 2s ease-out forwards; }
+  .tower-row.focus-driver.pos-gained { animation: flashGreenFD 2s ease-out forwards; }
+  .tower-row.focus-driver.pos-lost   { animation: flashRedFD 2s ease-out forwards; }
+
+  /* ── CONTROL PANEL ────────────────────────── */
+  .controls {
+    background: rgba(0,0,0,0.5);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 420px;
+    height: fit-content;
+  }
+  .controls h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ssw-gold);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .controls p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 4px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn-green  { background: #00e676; color: #000; }
+  .btn-red    { background: #ff4646; color: #fff; }
+  .btn-gold   { background: var(--ssw-gold); color: #000; }
+  .btn-blue   { background: #448aff; color: #fff; }
+  .btn-purple { background: #9c27b0; color: #fff; }
+  .btn-dim    { background: rgba(255,255,255,0.12); color: #fff; }
+
+  .btn-group { margin-bottom: 16px; }
+  .btn-group label {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    font-family: var(--font-display);
+  }
+
+  .event-log {
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 11px;
+    font-family: monospace;
+    color: rgba(255,255,255,0.5);
+    margin-top: 12px;
+  }
+  .event-log .ev-green { color: #00e676; }
+  .event-log .ev-red   { color: #ff4646; }
+  .event-log .ev-gold  { color: var(--ssw-gold); }
+</style>
+</head>
+<body>
+
+<!-- ── TIMING TOWER ─────────────────────────── -->
+<div class="timing-tower" id="tower">
+  <div class="tower-lap-header">
+    <span class="tower-lap-label">Lap</span>
+    <span class="tower-lap-nums" id="lap-display">1 <span class="lap-dim">/ 53</span></span>
+  </div>
+  <div class="tower-body" id="tower-body"></div>
+</div>
+
+<!-- ── CONTROL PANEL ────────────────────────── -->
+<div class="controls">
+  <h2>Timing Tower Lab</h2>
+  <p>Click buttons to simulate race events. Intervals jitter every second automatically. Watch for smooth slides, green/red flashes, and grid-delta arrows.</p>
+
+  <div class="btn-group">
+    <label>Overtakes</label>
+    <button class="btn btn-green" onclick="triggerOvertake('random')">Random Overtake</button>
+    <button class="btn btn-green" onclick="triggerOvertake('focus')">Focus Driver Gains</button>
+    <button class="btn btn-red" onclick="triggerLosePos('focus')">Focus Driver Loses</button>
+  </div>
+
+  <div class="btn-group">
+    <label>Multi-car</label>
+    <button class="btn btn-purple" onclick="triggerChainOvertake()">Chain Swap (3 cars)</button>
+    <button class="btn btn-blue" onclick="triggerBigShuffle()">Big Shuffle (5 cars)</button>
+  </div>
+
+  <div class="btn-group">
+    <label>Pit Stops</label>
+    <button class="btn btn-gold" onclick="triggerPitEntry()">Focus Driver Pits</button>
+    <button class="btn btn-dim" onclick="triggerPitExit()">Focus Driver Exits</button>
+    <button class="btn btn-gold" onclick="triggerRandomPit()">Random Pit Stop</button>
+  </div>
+
+  <div class="btn-group">
+    <label>Race Progress</label>
+    <button class="btn btn-dim" onclick="advanceLap()">Next Lap</button>
+    <button class="btn btn-red" onclick="triggerRetirement()">Random Retirement</button>
+  </div>
+
+  <div class="event-log" id="event-log"></div>
+</div>
+
+<script>
+// ── MOCK DATA ──────────────────────────────────
+const TEAMS = [
+  { name: "NOR", color: "#FF8700", grid: 1 },   // McLaren
+  { name: "PIA", color: "#FF8700", grid: 2 },   // McLaren
+  { name: "RUS", color: "#27F4D2", grid: 3 },   // Mercedes
+  { name: "LEC", color: "#E8002D", grid: 4 },   // Ferrari
+  { name: "ANT", color: "#64C4FF", grid: 5 },   // Alpine
+  { name: "HAM", color: "#E8002D", grid: 6 },   // Ferrari
+  { name: "BEA", color: "#B6BABD", grid: 7 },   // Haas
+  { name: "TSU", color: "#6692FF", grid: 8 },   // RB
+  { name: "LAW", color: "#6692FF", grid: 9 },   // RB
+  { name: "ALO", color: "#229971", grid: 10 },  // Aston
+  { name: "SAI", color: "#52E252", grid: 11 },  // Williams (mock)
+  { name: "VER", color: "#3671C6", grid: 12 },  // Red Bull
+  { name: "GAS", color: "#64C4FF", grid: 13 },  // Alpine
+  { name: "PER", color: "#3671C6", grid: 14 },  // Red Bull
+  { name: "STR", color: "#229971", grid: 15 },  // Aston
+  { name: "HUL", color: "#B6BABD", grid: 16 },  // Haas
+  { name: "BOT", color: "#52E252", grid: 17 },  // Williams (mock)
+  { name: "MAG", color: "#B6BABD", grid: 18 },  // Haas
+  { name: "ZHO", color: "#52E252", grid: 19 },  // Williams (mock)
+  { name: "SAR", color: "#52E252", grid: 20 },  // Williams (mock)
+];
+
+const FOCUS_IDX = 14; // PER starts P14, our "focus driver"
+let lap = 1;
+let totalLaps = 53;
+let retired = new Set();
+let inPit = new Set();
+
+// Current race order (indices into TEAMS)
+let order = TEAMS.map((_, i) => i);
+
+// Gaps: interval to car ahead (seconds)
+let gaps = order.map((_, i) => i === 0 ? 0 : 0.5 + Math.random() * 3);
+
+// Previous positions for flash detection
+let prevPositions = {};
+order.forEach((idx, pos) => { prevPositions[idx] = pos; });
+
+// ── RENDERING ──────────────────────────────────
+const body = document.getElementById("tower-body");
+let rowEls = {}; // keyed by driver index
+
+function gridDelta(driverIdx) {
+  const currentPos = order.indexOf(driverIdx);
+  const gridPos = TEAMS[driverIdx].grid - 1; // 0-based
+  const delta = gridPos - currentPos; // positive = gained places
+  if (delta > 0) return { text: `+${delta}`, cls: "up" };
+  if (delta < 0) return { text: `${delta}`, cls: "down" };
+  return { text: "—", cls: "same" };
+}
+
+function fmtGap(g) {
+  if (g == null || isNaN(g)) return "—";
+  if (g <= 0) return "+0.000";
+  if (g >= 60) {
+    const m = Math.floor(g / 60);
+    const s = (g - m * 60).toFixed(1);
+    return `+${m}:${s.padStart(4, "0")}`;
+  }
+  return `+${g.toFixed(3)}`;
+}
+
+function renderTower() {
+  const showTop = 10;
+  const visible = order.filter(idx => !retired.has(idx));
+  const top = visible.slice(0, showTop);
+  const focusPos = visible.indexOf(FOCUS_IDX);
+  const focusOutside = focusPos >= showTop && !retired.has(FOCUS_IDX);
+
+  // Determine which rows we need
+  const needed = new Set(top);
+  if (focusOutside) needed.add(FOCUS_IDX);
+
+  // Remove rows for drivers no longer visible
+  for (const idx of Object.keys(rowEls)) {
+    if (!needed.has(Number(idx))) {
+      rowEls[idx].remove();
+      delete rowEls[idx];
+    }
+  }
+
+  // Remove old separator
+  const oldSep = body.querySelector(".tower-sep");
+  if (oldSep) oldSep.remove();
+
+  // Create or update rows
+  let slot = 0;
+  for (const idx of top) {
+    let row = rowEls[idx];
+    if (!row) {
+      row = createRow(idx);
+      body.appendChild(row);
+      rowEls[idx] = row;
+    }
+    updateRow(row, idx, slot, slot === 0);
+    slot++;
+  }
+
+  // Separator + focus driver outside top
+  if (focusOutside) {
+    const sep = document.createElement("div");
+    sep.className = "tower-sep";
+    sep.style.top = (slot * 33) + "px";
+    body.appendChild(sep);
+
+    let row = rowEls[FOCUS_IDX];
+    if (!row) {
+      row = createRow(FOCUS_IDX);
+      body.appendChild(row);
+      rowEls[FOCUS_IDX] = row;
+    }
+    updateRow(row, FOCUS_IDX, slot + 0.1, false); // 0.1 accounts for separator
+    slot++;
+  }
+
+  // Set body height
+  const totalRows = focusOutside ? showTop + 1 : showTop;
+  body.style.height = (totalRows * 33 + (focusOutside ? 6 : 0)) + "px";
+}
+
+function createRow(driverIdx) {
+  const row = document.createElement("div");
+  row.className = "tower-row";
+  row.dataset.driver = driverIdx;
+
+  row.innerHTML = `
+    <div class="tower-pos"></div>
+    <div class="tower-color" style="background:${TEAMS[driverIdx].color}"></div>
+    <div class="tower-name"></div>
+    <div class="tower-gap"></div>
+    <div class="tower-delta"></div>
+  `;
+  return row;
+}
+
+function updateRow(row, driverIdx, slot, isLeader) {
+  const racePos = order.indexOf(driverIdx);
+  const isFocus = driverIdx === FOCUS_IDX;
+  const isPit = inPit.has(driverIdx);
+  const d = TEAMS[driverIdx];
+
+  // Position
+  row.querySelector(".tower-pos").textContent = racePos + 1;
+
+  // Name + pit chip
+  const nameEl = row.querySelector(".tower-name");
+  nameEl.innerHTML = d.name + (isPit ? ' <span class="tower-pit-chip">PIT</span>' : '');
+
+  // Gap
+  const gapEl = row.querySelector(".tower-gap");
+  gapEl.className = "tower-gap";
+  if (isLeader) {
+    gapEl.textContent = "Leader";
+    gapEl.classList.add("leader");
+  } else {
+    gapEl.textContent = fmtGap(gaps[racePos]);
+    if (isPit) gapEl.classList.add("pit-gap");
+  }
+
+  // Grid delta
+  const delta = gridDelta(driverIdx);
+  const deltaEl = row.querySelector(".tower-delta");
+  deltaEl.textContent = delta.text;
+  deltaEl.className = "tower-delta " + delta.cls;
+
+  // Focus driver class
+  row.classList.toggle("focus-driver", isFocus);
+
+  // Slide to slot position
+  const topPx = slot < 10.05
+    ? slot * 33
+    : (10 * 33 + 6); // after separator
+  row.style.top = topPx + "px";
+}
+
+// ── POSITION CHANGE DETECTION ──────────────────
+function detectFlashes() {
+  order.forEach((driverIdx, pos) => {
+    const prev = prevPositions[driverIdx];
+    if (prev == null) return;
+    const row = rowEls[driverIdx];
+    if (!row) return;
+
+    if (pos < prev) {
+      // Gained positions
+      row.classList.remove("pos-lost", "pos-gained");
+      void row.offsetWidth; // force reflow
+      row.classList.add("pos-gained");
+    } else if (pos > prev) {
+      // Lost positions
+      row.classList.remove("pos-gained", "pos-lost");
+      void row.offsetWidth;
+      row.classList.add("pos-lost");
+    }
+  });
+  // Save current positions
+  prevPositions = {};
+  order.forEach((idx, pos) => { prevPositions[idx] = pos; });
+}
+
+// ── INTERVAL JITTER ────────────────────────────
+function jitterGaps() {
+  for (let i = 1; i < gaps.length; i++) {
+    if (retired.has(order[i])) continue;
+    // Small random change each second
+    gaps[i] += (Math.random() - 0.5) * 0.15;
+    if (gaps[i] < 0.05) gaps[i] = 0.05 + Math.random() * 0.2;
+  }
+}
+
+// ── SIMULATION TRIGGERS ────────────────────────
+function logEvent(msg, cls = "") {
+  const log = document.getElementById("event-log");
+  const line = document.createElement("div");
+  line.className = cls;
+  line.textContent = `L${lap}: ${msg}`;
+  log.prepend(line);
+  if (log.children.length > 50) log.lastChild.remove();
+}
+
+function swapPositions(posA, posB) {
+  // posA and posB are 0-based indices in order[]
+  const dA = order[posA];
+  const dB = order[posB];
+  order[posA] = dB;
+  order[posB] = dA;
+  // Swap gaps reasonably
+  const tmpGap = gaps[posA];
+  gaps[posA] = 0.05 + Math.random() * 0.3;
+  gaps[posB] = tmpGap;
+}
+
+function triggerOvertake(mode) {
+  const visible = order.filter(idx => !retired.has(idx));
+  let pos;
+  if (mode === "focus") {
+    pos = order.indexOf(FOCUS_IDX);
+    if (pos <= 0) { logEvent("Focus driver already leading!", "ev-gold"); return; }
+  } else {
+    // Random overtake in top 15
+    pos = 1 + Math.floor(Math.random() * Math.min(14, visible.length - 1));
+  }
+  const gainer = TEAMS[order[pos]].name;
+  const loser = TEAMS[order[pos - 1]].name;
+  swapPositions(pos - 1, pos);
+  detectFlashes();
+  renderTower();
+  logEvent(`${gainer} overtakes ${loser}!`, "ev-green");
+}
+
+function triggerLosePos(mode) {
+  let pos;
+  if (mode === "focus") {
+    pos = order.indexOf(FOCUS_IDX);
+    if (pos >= order.length - 1) { logEvent("Focus driver already last!", "ev-red"); return; }
+  } else {
+    pos = Math.floor(Math.random() * (order.length - 1));
+  }
+  const loser = TEAMS[order[pos]].name;
+  const gainer = TEAMS[order[pos + 1]].name;
+  swapPositions(pos, pos + 1);
+  detectFlashes();
+  renderTower();
+  logEvent(`${loser} loses position to ${gainer}`, "ev-red");
+}
+
+function triggerChainOvertake() {
+  // A car from pos ~6 jumps forward 2 places
+  const startPos = 3 + Math.floor(Math.random() * 5);
+  if (startPos < 2) return;
+  const charger = TEAMS[order[startPos]].name;
+  swapPositions(startPos - 1, startPos);
+  swapPositions(startPos - 2, startPos - 1);
+  detectFlashes();
+  renderTower();
+  logEvent(`${charger} carves through — gains 2 places!`, "ev-green");
+}
+
+function triggerBigShuffle() {
+  // Shuffle positions 4-9 randomly (simulates restart / incident chaos)
+  const start = 3, end = 9;
+  const chunk = order.slice(start, end);
+  for (let i = chunk.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chunk[i], chunk[j]] = [chunk[j], chunk[i]];
+  }
+  order.splice(start, end - start, ...chunk);
+  detectFlashes();
+  renderTower();
+  logEvent("Chaos! Multiple position changes after incident", "ev-red");
+}
+
+function triggerPitEntry() {
+  inPit.add(FOCUS_IDX);
+  // Drop some positions
+  const pos = order.indexOf(FOCUS_IDX);
+  const dropTo = Math.min(pos + 3 + Math.floor(Math.random() * 3), order.length - 1);
+  // Move driver down
+  for (let i = pos; i < dropTo; i++) {
+    swapPositions(i, i + 1);
+  }
+  gaps[order.indexOf(FOCUS_IDX)] = 15 + Math.random() * 20;
+  detectFlashes();
+  renderTower();
+  logEvent(`${TEAMS[FOCUS_IDX].name} boxes! Drops to P${dropTo + 1}`, "ev-gold");
+}
+
+function triggerPitExit() {
+  inPit.delete(FOCUS_IDX);
+  renderTower();
+  logEvent(`${TEAMS[FOCUS_IDX].name} back on track`, "ev-gold");
+}
+
+function triggerRandomPit() {
+  // Pick a random non-focus, non-retired driver in top 10
+  const candidates = order.slice(0, 10).filter(idx => idx !== FOCUS_IDX && !retired.has(idx));
+  if (!candidates.length) return;
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  inPit.add(pick);
+  const pos = order.indexOf(pick);
+  const dropTo = Math.min(pos + 4 + Math.floor(Math.random() * 4), order.length - 1);
+  for (let i = pos; i < dropTo; i++) {
+    swapPositions(i, i + 1);
+  }
+  gaps[order.indexOf(pick)] = 18 + Math.random() * 15;
+  detectFlashes();
+  renderTower();
+  logEvent(`${TEAMS[pick].name} pits from P${pos + 1} — drops to P${dropTo + 1}`, "ev-gold");
+  // Auto exit after 3-5 seconds
+  setTimeout(() => {
+    inPit.delete(pick);
+    renderTower();
+    logEvent(`${TEAMS[pick].name} back on track`, "ev-gold");
+  }, 3000 + Math.random() * 2000);
+}
+
+function triggerRetirement() {
+  const candidates = order.filter(idx => idx !== FOCUS_IDX && !retired.has(idx));
+  if (!candidates.length) return;
+  // Pick someone from lower half
+  const pick = candidates[Math.floor(candidates.length * 0.5 + Math.random() * candidates.length * 0.5)];
+  if (!pick && pick !== 0) return;
+  retired.add(pick);
+  order = order.filter(idx => !retired.has(idx));
+  detectFlashes();
+  renderTower();
+  logEvent(`${TEAMS[pick].name} retires — mechanical failure`, "ev-red");
+}
+
+function advanceLap() {
+  lap++;
+  if (lap > totalLaps) lap = totalLaps;
+  document.getElementById("lap-display").innerHTML =
+    `${lap} <span class="lap-dim">/ ${totalLaps}</span>`;
+  // Small organic changes each lap
+  if (Math.random() < 0.3) {
+    // Random close battle — tighten a gap
+    const pos = 1 + Math.floor(Math.random() * 8);
+    gaps[pos] = 0.05 + Math.random() * 0.3;
+  }
+  renderTower();
+  logEvent(`Lap ${lap}`, "");
+}
+
+// ── MAIN LOOP ──────────────────────────────────
+renderTower();
+
+setInterval(() => {
+  jitterGaps();
+  renderTower();
+}, 1000);
+</script>
+</body>
+</html>

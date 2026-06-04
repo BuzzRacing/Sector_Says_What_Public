@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sector Says What - AI Broadcast Commentary for iRacing</title>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Titillium+Web:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --emerald:#2ecc71;--emerald-dark:#1a9c54;--gold:#D4AF37;--gold-light:#e8c954;
+  --bg:#0a0a0c;--bg-card:rgba(14,14,18,0.85);--bg-glass:rgba(20,20,28,0.65);
+  --text:#e8e8e8;--text-dim:#9a9ab0;--border:#1e1e2a;
+  --f1-purple:#9b59b6;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Titillium Web',sans-serif;color:var(--text);
+  background:var(--bg);overflow-x:hidden;line-height:1.6;
+}
+h1,h2,h3,.section-label{font-family:'Audiowide',sans-serif;letter-spacing:0.04em}
+
+/* ── NAV ────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(10,10,12,0.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);padding:0 2rem;
+  display:flex;align-items:center;height:56px;
+}
+nav .logo{font-family:'Audiowide',sans-serif;font-size:1.1rem;color:var(--emerald)}
+nav .logo span{color:var(--gold)}
+nav ul{list-style:none;display:flex;gap:1.8rem;margin-left:auto}
+nav a{color:var(--text-dim);text-decoration:none;font-size:0.85rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.08em;transition:color 0.2s}
+nav a:hover{color:var(--emerald)}
+
+/* ── HERO ───────────────────────────────── */
+.hero{
+  position:relative;min-height:100vh;display:flex;align-items:center;
+  justify-content:center;text-align:center;padding:6rem 2rem 4rem;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:url('/backgrounds/buzz-car-wallpaper.png') center/cover no-repeat;
+  filter:brightness(0.25) saturate(0.6);z-index:0;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 40%,var(--bg) 100%);z-index:1;
+}
+.hero-content{position:relative;z-index:2;max-width:800px}
+.hero h1{
+  font-size:clamp(2.4rem,6vw,4.5rem);line-height:1.1;margin-bottom:0.4em;
+  background:linear-gradient(135deg,var(--emerald),var(--gold-light));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero .tagline{
+  font-size:clamp(1rem,2.5vw,1.5rem);color:var(--text-dim);
+  font-weight:300;margin-bottom:2rem;
+}
+.hero .sub{
+  font-size:0.95rem;color:var(--text-dim);max-width:560px;margin:0 auto 2.5rem;
+  line-height:1.7;
+}
+.hero .badge-row{display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap}
+.badge{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  padding:0.4rem 1rem;border-radius:999px;font-size:0.8rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.06em;
+  border:1px solid var(--border);background:var(--bg-glass);
+  backdrop-filter:blur(10px);
+}
+.badge.emerald{border-color:var(--emerald);color:var(--emerald)}
+.badge.gold{border-color:var(--gold);color:var(--gold)}
+.badge.purple{border-color:var(--f1-purple);color:var(--f1-purple)}
+
+/* ── SECTIONS ───────────────────────────── */
+section{padding:5rem 2rem}
+.section-label{
+  font-size:0.75rem;color:var(--emerald);text-transform:uppercase;
+  letter-spacing:0.15em;margin-bottom:0.6rem;
+}
+section h2{font-size:clamp(1.6rem,3.5vw,2.4rem);margin-bottom:1rem}
+section .lead{
+  font-size:1.05rem;color:var(--text-dim);max-width:640px;
+  margin-bottom:3rem;line-height:1.7;
+}
+.container{max-width:1100px;margin:0 auto}
+
+/* ── WHAT IS IT ─────────────────────────── */
+.what-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:2rem;
+}
+.what-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:16px;padding:2rem;position:relative;overflow:hidden;
+  transition:border-color 0.3s,transform 0.3s;
+}
+.what-card:hover{border-color:var(--emerald);transform:translateY(-4px)}
+.what-card .icon{
+  font-size:2rem;margin-bottom:1rem;display:block;
+}
+.what-card h3{font-size:1.1rem;margin-bottom:0.6rem;color:#fff}
+.what-card p{font-size:0.9rem;color:var(--text-dim);line-height:1.6}
+
+/* ── BROADCAST TEAM ─────────────────────── */
+.team-section{background:linear-gradient(180deg,var(--bg) 0%,#0d0d12 50%,var(--bg) 100%)}
+.team-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:1.5rem;
+}
+.caster-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;transition:border-color 0.3s,transform 0.3s;
+}
+.caster-card:hover{border-color:var(--gold);transform:translateY(-4px)}
+.caster-photo{
+  width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;
+  display:block;filter:brightness(0.9);
+}
+.caster-info{padding:1rem 1.2rem 1.4rem}
+.caster-info h3{
+  font-size:1rem;color:#fff;margin-bottom:0.15rem;
+  text-transform:uppercase;
+}
+.caster-info .role{
+  font-size:0.75rem;color:var(--emerald);text-transform:uppercase;
+  letter-spacing:0.08em;font-weight:600;margin-bottom:0.5rem;
+}
+.caster-info .bio{font-size:0.82rem;color:var(--text-dim);line-height:1.5}
+.caster-info .style-tag{
+  display:inline-block;margin-top:0.6rem;padding:0.2rem 0.6rem;
+  border-radius:999px;font-size:0.7rem;font-weight:600;
+  background:rgba(46,204,113,0.12);color:var(--emerald);
+  border:1px solid rgba(46,204,113,0.25);
+}
+
+/* ── FEATURES ───────────────────────────── */
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:1.5rem;
+}
+.feature{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+  padding:2rem;display:flex;gap:1.2rem;align-items:flex-start;
+  transition:border-color 0.3s;
+}
+.feature:hover{border-color:var(--gold)}
+.feature .f-icon{
+  flex-shrink:0;width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);
+}
+.feature h3{font-size:0.95rem;color:#fff;margin-bottom:0.3rem}
+.feature p{font-size:0.85rem;color:var(--text-dim);line-height:1.55}
+
+/* ── HOW IT WORKS ───────────────────────── */
+.how-section{background:linear-gradient(180deg,var(--bg) 0%,#0e0e14 100%)}
+.pipeline{
+  display:flex;gap:0;align-items:stretch;flex-wrap:wrap;justify-content:center;
+}
+.pipe-step{
+  flex:1 1 200px;max-width:240px;padding:2rem 1.5rem;text-align:center;
+  position:relative;
+}
+.pipe-step::after{
+  content:'';position:absolute;right:-1px;top:30%;height:40%;width:2px;
+  background:linear-gradient(180deg,transparent,var(--emerald),transparent);
+}
+.pipe-step:last-child::after{display:none}
+.pipe-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,var(--emerald-dark),var(--emerald));
+  color:#000;font-family:'Audiowide',sans-serif;font-size:1rem;
+  margin-bottom:1rem;font-weight:700;
+}
+.pipe-step h3{font-size:0.9rem;color:#fff;margin-bottom:0.4rem}
+.pipe-step p{font-size:0.8rem;color:var(--text-dim);line-height:1.5}
+
+/* ── STATS BAR ──────────────────────────── */
+.stats-bar{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:3rem;
+  padding:3rem 2rem;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);margin:0 auto;max-width:900px;
+}
+.stat{text-align:center}
+.stat .num{
+  font-family:'Audiowide',sans-serif;font-size:2.2rem;
+  background:linear-gradient(135deg,var(--emerald),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;display:block;
+}
+.stat .label{font-size:0.8rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.2rem}
+
+/* ── FOOTER ─────────────────────────────── */
+footer{
+  text-align:center;padding:4rem 2rem 3rem;
+  border-top:1px solid var(--border);
+}
+footer .logo-big{
+  font-family:'Audiowide',sans-serif;font-size:1.6rem;
+  color:var(--emerald);margin-bottom:0.6rem;
+}
+footer .logo-big span{color:var(--gold)}
+footer p{font-size:0.85rem;color:var(--text-dim);max-width:480px;margin:0 auto 1.5rem}
+footer .made-with{font-size:0.75rem;color:#555;margin-top:2rem}
+
+/* ── SCROLL ANIMATIONS ──────────────────── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ─────────────────────────── */
+@media(max-width:768px){
+  nav ul{display:none}
+  .pipeline{flex-direction:column;align-items:center}
+  .pipe-step::after{display:none}
+  .team-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">SECTOR SAYS <span>WHAT</span></div>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#team">Broadcast Team</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Your Race Deserves a Broadcast</h1>
+    <p class="tagline">AI-powered live commentary for iRacing</p>
+    <p class="sub">
+      Seven AI commentators call your race in real time &mdash; overtakes, pit strategy,
+      Driver of the Day, the full broadcast experience. Every lap sounds like it matters,
+      because it does.
+    </p>
+    <div class="badge-row">
+      <span class="badge emerald">iRacing SDK</span>
+      <span class="badge gold">7 Commentators</span>
+      <span class="badge purple">Live TTS Audio</span>
+      <span class="badge emerald">Race Replays</span>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT IS IT -->
+<section id="about">
+  <div class="container">
+    <p class="section-label reveal">What Is It</p>
+    <h2 class="reveal">A full broadcast booth for your sim races</h2>
+    <p class="lead reveal">
+      Sector Says What reads live telemetry from iRacing and produces real-time
+      spoken commentary, a broadcast HUD overlay, and post-race replays &mdash;
+      all running locally on your PC.
+    </p>
+    <div class="what-grid">
+      <div class="what-card reveal">
+        <span class="icon">&#127908;</span>
+        <h3>Live AI Commentary</h3>
+        <p>Seven distinct commentators react to every overtake, pit entry,
+          fastest lap, and flag change. They rotate perspectives &mdash; studio anchor,
+          pitlane analyst, fan zone correspondent &mdash; just like a real broadcast.</p>
+      </div>
+      <div class="what-card reveal">
+        <span class="icon">&#128250;</span>
+        <h3>Broadcast HUD</h3>
+        <p>A real-time overlay with a live timing tower, battle cards,
+          Driver of the Day standings, flag atmosphere effects, and a commentary
+          transcript &mdash; all styled in motorsport glass-panel UI.</p>
+      </div>
+      <div class="what-card reveal">
+        <span class="icon">&#127942;</span>
+        <h3>Driver of the Day</h3>
+        <p>A multi-factor scoring engine that rewards clean driving, comeback charges,
+          and consistent pace &mdash; not just wins. The best drive gets the crown,
+          even from the back of the grid.</p>
+      </div>
+      <div class="what-card reveal">
+        <span class="icon">&#127910;</span>
+        <h3>Race Replays</h3>
+        <p>Every race is archived with an animated track map, timeline scrubbing,
+          commentary callouts synced to position, and full results.
+          Relive your best drives or study your rivals.</p>
+      </div>
+      <div class="what-card reveal">
+        <span class="icon">&#128300;</span>
+        <h3>Pit Wall Dashboard</h3>
+        <p>A full admin panel to configure your broadcast: commentator profiles,
+          trigger tuning, prompt templates, media gallery, audio routing,
+          and race history &mdash; all from the browser.</p>
+      </div>
+      <div class="what-card reveal">
+        <span class="icon">&#127937;</span>
+        <h3>Pre-Race Show</h3>
+        <p>Before the green flag, your analysts preview the grid &mdash; Nigel's Pick
+          highlights a dark horse, Clara breaks down the Focus Driver's form.
+          Sets the stage before a wheel even turns.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar reveal">
+  <div class="stat"><span class="num">7</span><span class="label">AI Commentators</span></div>
+  <div class="stat"><span class="num">20+</span><span class="label">Live Triggers</span></div>
+  <div class="stat"><span class="num">239</span><span class="label">Telemetry Variables</span></div>
+  <div class="stat"><span class="num">3</span><span class="label">Anti-Fabrication Layers</span></div>
+</div>
+
+<!-- BROADCAST TEAM -->
+<section id="team" class="team-section">
+  <div class="container">
+    <p class="section-label reveal">The Broadcast Team</p>
+    <h2 class="reveal">Seven voices. One booth.</h2>
+    <p class="lead reveal">
+      Each commentator has a distinct personality, location, and style. They
+      rotate through race events so the broadcast never sounds like a single voice
+      reading data.
+    </p>
+    <div class="team-grid">
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/murray_default.png" alt="Murray" loading="lazy">
+        <div class="caster-info">
+          <h3>Murray</h3>
+          <div class="role">Lead Commentator &middot; Studio</div>
+          <p class="bio">The voice of motorsport. Murray brings decades of passion to every corner.</p>
+          <span class="style-tag">High-Octane Hype</span>
+        </div>
+      </div>
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/sienna_studio_pose_02.png" alt="Sienna" loading="lazy">
+        <div class="caster-info">
+          <h3>Sienna</h3>
+          <div class="role">Co-Anchor &middot; Studio</div>
+          <p class="bio">Sienna anchors the broadcast with warmth and authority from the studio.</p>
+          <span class="style-tag">Warm &amp; Reflective</span>
+        </div>
+      </div>
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/nigel_studio_pose_07.png" alt="Nigel" loading="lazy">
+        <div class="caster-info">
+          <h3>Nigel</h3>
+          <div class="role">Technical Analyst &middot; Studio</div>
+          <p class="bio">The pitlane encyclopedia. If there's data, Nigel has already crunched it.</p>
+          <span class="style-tag">Telemetry Breakdowns</span>
+        </div>
+      </div>
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/jules_fanzone_pose_01.png" alt="Jules" loading="lazy">
+        <div class="caster-info">
+          <h3>Jules</h3>
+          <div class="role">Correspondent &middot; Fan Zone</div>
+          <p class="bio">Jules lives in the crowd, feeding off the electric atmosphere of race day.</p>
+          <span class="style-tag">Crowd Energy</span>
+        </div>
+      </div>
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/marcus_default.png" alt="Marcus" loading="lazy">
+        <div class="caster-info">
+          <h3>Marcus</h3>
+          <div class="role">Paddock Insider &middot; Trackside</div>
+          <p class="bio">Former driver turned paddock insider. Marcus knows everyone and everything.</p>
+          <span class="style-tag">Tactical Context</span>
+        </div>
+      </div>
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/clara_default.png" alt="Clara" loading="lazy">
+        <div class="caster-info">
+          <h3>Clara</h3>
+          <div class="role">Feature Reporter &middot; Paddock</div>
+          <p class="bio">A racer's heart with a broadcaster's voice. Clara brings the emotion.</p>
+          <span class="style-tag">Emotive &amp; Fan-Centric</span>
+        </div>
+      </div>
+      <div class="caster-card reveal">
+        <img class="caster-photo" src="/commentators/theo_pitlane_pose_04.png" alt="Theo" loading="lazy">
+        <div class="caster-info">
+          <h3>Theo</h3>
+          <div class="role">Pit Lane Reporter</div>
+          <p class="bio">The charming storyteller. Theo weaves history into every race moment.</p>
+          <span class="style-tag">Historical Parallels</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <p class="section-label reveal">Features</p>
+    <h2 class="reveal">Built for the broadcast experience</h2>
+    <p class="lead reveal">
+      Every feature exists to make your race feel like a televised event &mdash;
+      not a data readout with a voice on top.
+    </p>
+    <div class="features-grid">
+      <div class="feature reveal">
+        <div class="f-icon">&#9201;</div>
+        <div>
+          <h3>Real-Time Trigger Engine</h3>
+          <p>Overtakes, pit entries, fastest laps, lead changes, flag transitions, battles,
+            and periodic race summaries &mdash; all detected from live telemetry with edge-detection
+            and confirmation windows to prevent false calls.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#128483;</div>
+        <div>
+          <h3>Natural TTS Playback</h3>
+          <p>Commentary is spoken aloud through configurable audio devices via FMOD.
+            A queue system prevents talk-over &mdash; if the booth is hot, events are logged
+            but audio waits its turn.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#128737;</div>
+        <div>
+          <h3>Anti-Fabrication AI</h3>
+          <p>Three independent layers (system rules, per-trigger prompt templates, and
+            post-hoc sanitizer) ensure the AI never invents tyre strategy, team radio,
+            or collision blame. If it can't see it in the data, it doesn't say it.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#127775;</div>
+        <div>
+          <h3>Focus Driver Tracking</h3>
+          <p>Pick your driver (or yourself) and the broadcast weaves their story through
+            every callout &mdash; position changes, lap times, pit stops, momentum shifts.
+            Matched by iRacing customer ID so it never gets confused.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#128200;</div>
+        <div>
+          <h3>Live Timing Tower</h3>
+          <p>Animated position changes, gap intervals, pit indicators, and DOTD standings
+            in a glass-panel HUD overlay. Slides, flashes, and highlights
+            just like the real F1 broadcast graphics.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#127915;</div>
+        <div>
+          <h3>Animated Race Replays</h3>
+          <p>Every race is saved with lap-sample timing data. The replay animates dots
+            on a track map, syncs commentary callouts to position, and includes full
+            results with podium and DOTD cards.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#128295;</div>
+        <div>
+          <h3>Pit Wall Admin</h3>
+          <p>Full browser-based control panel: commentator profiles and photos, prompt template
+            editor, DOTD scoring tuning, trigger enable/disable, media gallery, track centerline
+            editor, and race archives.</p>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">&#127760;</div>
+        <div>
+          <h3>Works With Any iRacing Session</h3>
+          <p>Official races, hosted sessions, AI races &mdash; anything the iRacing SDK
+            exposes. 239 telemetry variables, all frozen once per tick for data consistency.
+            Runs entirely local, no cloud dependency.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how-section">
+  <div class="container">
+    <p class="section-label reveal">How It Works</p>
+    <h2 class="reveal">From telemetry to broadcast in milliseconds</h2>
+    <p class="lead reveal">
+      The engine reads iRacing's shared memory, detects race events, generates
+      commentary via LLM, and speaks it through your audio device &mdash; all in a
+      single tick loop.
+    </p>
+    <div class="pipeline reveal">
+      <div class="pipe-step">
+        <span class="pipe-num">1</span>
+        <h3>Freeze</h3>
+        <p>Snapshot all 239 telemetry variables once per tick. Every downstream
+          read sees the same moment in time.</p>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">2</span>
+        <h3>Detect</h3>
+        <p>Edge-detect overtakes, pit entries, flag changes, and battles
+          using position sort, confirmation windows, and cooldowns.</p>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">3</span>
+        <h3>Generate</h3>
+        <p>Send the event context to an LLM with anti-fabrication ground rules.
+          A rotating commentator is chosen based on trigger type and location.</p>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">4</span>
+        <h3>Speak</h3>
+        <p>TTS converts the line to audio, FMOD routes it to your chosen device,
+          and the commentary queue prevents talk-over.</p>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-num">5</span>
+        <h3>Archive</h3>
+        <p>Every event, lap sample, and commentary line is saved to SQLite.
+          Race replays reconstruct the full broadcast from this data.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo-big">SECTOR SAYS <span>WHAT</span></div>
+  <p>Built by a sim racer, for sim racers. Every lap deserves a story.</p>
+  <p style="font-size:0.85rem;color:var(--text-dim)">
+    Python &middot; Flask &middot; iRacing SDK &middot; FMOD &middot; OpenAI &middot; SQLite
+  </p>
+  <p class="made-with">Made with adrenaline in Los Angeles</p>
+</footer>
+
+<!-- SCROLL REVEAL -->
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

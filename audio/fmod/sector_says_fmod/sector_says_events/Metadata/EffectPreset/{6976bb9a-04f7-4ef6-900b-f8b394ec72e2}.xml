@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="EffectPreset" id="{6976bb9a-04f7-4ef6-900b-f8b394ec72e2}">
+		<property name="name">
+			<value>FMOD Reverb</value>
+		</property>
+		<relationship name="folder">
+			<destination>{1641768d-a019-43de-bba4-4e67a431f26b}</destination>
+		</relationship>
+		<relationship name="effect">
+			<destination>{cae0a627-b204-4a6b-be02-3504d24633c3}</destination>
+		</relationship>
+	</object>
+	<object class="SFXReverbEffect" id="{cae0a627-b204-4a6b-be02-3504d24633c3}">
+		<property name="wetLevel">
+			<value>-25</value>
+		</property>
+	</object>
+</objects>

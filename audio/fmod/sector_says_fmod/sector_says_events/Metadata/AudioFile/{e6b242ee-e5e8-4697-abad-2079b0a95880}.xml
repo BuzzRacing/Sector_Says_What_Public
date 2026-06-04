@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{e6b242ee-e5e8-4697-abad-2079b0a95880}">
+		<property name="assetPath">
+			<value>pit_1761243702.mp3</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>2.976</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{57ab233d-c633-4ba7-87d4-00d984eedd20}</destination>
+		</relationship>
+	</object>
+</objects>

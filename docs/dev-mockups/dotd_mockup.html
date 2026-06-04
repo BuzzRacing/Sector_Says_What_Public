@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DOTD Card Mockups — Sector Says What</title>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-display: 'Audiowide', 'Orbitron', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --ssw-gold: #d4af37;
+    --ssw-gold-glow: rgba(212,175,55,0.5);
+    --surface-1: rgba(20, 20, 35, 0.92);
+    --text-dim: rgba(255,255,255,0.35);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0e0e1a;
+    color: #fff;
+    font-family: var(--font-body);
+    padding: 30px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--ssw-gold);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 280px 280px;
+    gap: 40px;
+  }
+
+  .option-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .option-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: var(--ssw-gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .option-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  /* ════════════════════════════════════════════
+     OPTION A — "Points Leader" with animated bars
+     Hero shows points + gap bar fills. Runners
+     show deficit. Smooth morph on lead change.
+     ════════════════════════════════════════════ */
+
+  .dotd-a {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 280px;
+  }
+
+  .dotd-a-hero {
+    border-radius: 10px;
+    overflow: hidden;
+    height: 130px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+    background: var(--surface-1);
+    display: flex;
+    align-items: stretch;
+  }
+  /* Team color strip along the bottom of hero */
+  .dotd-a-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--hero-team-color, #666);
+    z-index: 3;
+  }
+
+  .dotd-a-hero-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px 16px 0 16px;
+    min-width: 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .dotd-a-tag {
+    font-family: var(--font-display);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--ssw-gold);
+  }
+
+  .dotd-a-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .dotd-a-pts {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dotd-a-unit {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .dotd-a-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+  }
+
+  .dotd-a-color-bar {
+    width: 4px;
+    height: 18px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    transition: background 0.6s;
+  }
+
+  .dotd-a-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+    transition: all 0.4s;
+  }
+
+  .dotd-a-pos {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    margin-left: auto;
+  }
+
+  .dotd-a-photo {
+    width: 130px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-color: transparent;
+  }
+  /* Fade the right edge of the photo into the card background */
+  .dotd-a-photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to left,
+      var(--surface-1) 0%,
+      rgba(20, 20, 35, 0.7) 20%,
+      rgba(20, 20, 35, 0.15) 50%,
+      transparent 75%);
+    z-index: 1;
+  }
+
+  /* Animated glow pulse on hero border */
+  .dotd-a-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, rgba(212,175,55,0.3), transparent 60%) border-box;
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    animation: goldPulse 3s ease-in-out infinite;
+  }
+  @keyframes goldPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* Lead-change flash on hero card */
+  @keyframes heroFlash {
+    0%   { box-shadow: 0 0 30px rgba(212,175,55,0.7), 0 4px 24px rgba(0,0,0,0.5); }
+    50%  { box-shadow: 0 0 15px rgba(212,175,55,0.3), 0 4px 24px rgba(0,0,0,0.5); }
+    100% { box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+  }
+  .dotd-a-hero.hero-flash {
+    animation: heroFlash 1.5s ease-out forwards;
+  }
+
+  /* Runner cards */
+  .dotd-a-runners {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dotd-a-runner {
+    flex: 1;
+    background: var(--surface-1);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 58px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  .dotd-a-runner-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 10px 0 10px;
+  }
+
+  .dotd-a-runner-rank {
+    font-family: var(--font-display);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+
+  .dotd-a-runner-gap {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.7);
+    line-height: 1;
+    transition: all 0.4s;
+  }
+
+  .dotd-a-runner-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px 7px;
+  }
+
+  .dotd-a-runner-bar {
+    width: 3px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .dotd-a-runner-name {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+  }
+
+  /* Score bar (fills proportionally to leader) */
+  .dotd-a-bar-track {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+  }
+  .dotd-a-bar-fill {
+    height: 100%;
+    border-radius: 0 2px 0 0;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+
+  /* ════════════════════════════════════════════
+     OPTION B — Unified card, rotating spotlight
+     All 3 in one card; P1 row is expanded.
+     Lead changes trigger a morph animation.
+     ════════════════════════════════════════════ */
+
+  .dotd-b {
+    width: 280px;
+    background: var(--surface-1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .dotd-b-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .dotd-b-title {
+    font-family: var(--font-display);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--ssw-gold);
+  }
+
+  .dotd-b-live {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .dotd-b-live-dot {
+    width: 6px;
+    height: 6px;
+    background: #00e676;
+    border-radius: 50%;
+    animation: liveBlink 2s ease-in-out infinite;
+  }
+  @keyframes liveBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .dotd-b-rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dotd-b-row {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    height: 42px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dotd-b-row.is-leader {
+    height: 56px;
+    background: rgba(212, 175, 55, 0.08);
+  }
+
+  .dotd-b-rank {
+    width: 24px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 900;
+    flex-shrink: 0;
+    transition: all 0.4s;
+  }
+  .dotd-b-row.is-leader .dotd-b-rank { color: var(--ssw-gold); }
+  .dotd-b-row:not(.is-leader) .dotd-b-rank { color: rgba(255,255,255,0.4); }
+
+  .dotd-b-color {
+    width: 4px;
+    height: 20px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 10px;
+    transition: all 0.4s;
+  }
+  .dotd-b-row.is-leader .dotd-b-color { height: 28px; }
+
+  .dotd-b-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dotd-b-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    transition: all 0.4s;
+  }
+  .dotd-b-row.is-leader .dotd-b-name { font-size: 14px; }
+
+  .dotd-b-sub {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 1px;
+  }
+  .dotd-b-sub .race-pos { color: rgba(255,255,255,0.5); }
+
+  .dotd-b-score {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 10px;
+  }
+
+  .dotd-b-pts {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 900;
+    color: #fff;
+    transition: all 0.4s;
+  }
+  .dotd-b-row.is-leader .dotd-b-pts {
+    font-size: 22px;
+    color: var(--ssw-gold);
+  }
+
+  .dotd-b-gap {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    transition: all 0.4s;
+  }
+  .dotd-b-row.is-leader .dotd-b-gap {
+    color: var(--ssw-gold);
+    font-size: 9px;
+    opacity: 0.6;
+  }
+
+  /* Animated bar at bottom of each row */
+  .dotd-b-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dotd-b-row.is-leader .dotd-b-bar { height: 3px; }
+
+  /* Lead change animation */
+  @keyframes newLeaderFlash {
+    0%   { background: rgba(212, 175, 55, 0.35); }
+    40%  { background: rgba(212, 175, 55, 0.2); }
+    100% { background: rgba(212, 175, 55, 0.08); }
+  }
+  .dotd-b-row.new-leader {
+    animation: newLeaderFlash 1.5s ease-out forwards;
+  }
+
+  /* Deposed leader */
+  @keyframes deposedFlash {
+    0%   { background: rgba(255, 70, 70, 0.25); }
+    100% { background: transparent; }
+  }
+  .dotd-b-row.deposed {
+    animation: deposedFlash 1.5s ease-out forwards;
+  }
+
+
+  /* ════════════════════════════════════════════
+     OPTION C — Racing-gauge style with arc meters
+     Points shown as an arc fill, like a power gauge.
+     ════════════════════════════════════════════ */
+
+  .dotd-c {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dotd-c-hero {
+    background: var(--surface-1);
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 14px 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+  .dotd-c-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ssw-gold), transparent);
+    animation: goldPulse 3s ease-in-out infinite;
+  }
+
+  .dotd-c-gauge {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .dotd-c-gauge svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .dotd-c-gauge-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.08);
+    stroke-width: 5;
+  }
+  .dotd-c-gauge-fill {
+    fill: none;
+    stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+                stroke 0.6s;
+  }
+  .dotd-c-gauge-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .dotd-c-gauge-num {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    transition: all 0.4s;
+  }
+  .dotd-c-gauge-label {
+    font-family: var(--font-display);
+    font-size: 7px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .dotd-c-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .dotd-c-tag {
+    font-family: var(--font-display);
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--ssw-gold);
+    margin-bottom: 4px;
+  }
+  .dotd-c-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+    transition: all 0.4s;
+  }
+  .dotd-c-meta {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 3px;
+  }
+  .dotd-c-meta .pos-tag {
+    color: rgba(255,255,255,0.55);
+    font-weight: 700;
+  }
+
+  /* Compact runner bars */
+  .dotd-c-runners {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dotd-c-rn {
+    background: var(--surface-1);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  .dotd-c-rn-rank {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.35);
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  .dotd-c-rn-color {
+    width: 3px;
+    height: 18px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .dotd-c-rn-name {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    flex: 1;
+  }
+
+  .dotd-c-rn-gap {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+
+  .dotd-c-rn-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.6;
+  }
+
+
+  /* ════════════════════════════════════════════
+     OPTION D — Minimal "live leaderboard" strip
+     Compact, tight, like a live sports widget.
+     All 3 in a single card, no images.
+     ════════════════════════════════════════════ */
+
+  .dotd-d {
+    width: 280px;
+    background: var(--surface-1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  .dotd-d-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    gap: 8px;
+  }
+
+  .dotd-d-trophy {
+    font-size: 14px;
+  }
+
+  .dotd-d-title {
+    font-family: var(--font-display);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--ssw-gold);
+    flex: 1;
+  }
+
+  .dotd-d-lap {
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .dotd-d-row {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    height: 38px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .dotd-d-row:last-child { border-bottom: none; }
+
+  .dotd-d-row.is-p1 {
+    height: 46px;
+    background: rgba(212, 175, 55, 0.06);
+  }
+
+  .dotd-d-rank {
+    width: 22px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .dotd-d-row.is-p1 .dotd-d-rank { color: var(--ssw-gold); }
+  .dotd-d-row:not(.is-p1) .dotd-d-rank { color: rgba(255,255,255,0.3); }
+
+  .dotd-d-color {
+    width: 3px;
+    height: 18px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+
+  .dotd-d-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    flex: 1;
+  }
+
+  .dotd-d-rpos {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    margin-right: 10px;
+  }
+
+  .dotd-d-pts {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 900;
+    text-align: right;
+    min-width: 50px;
+    transition: all 0.4s;
+  }
+  .dotd-d-row.is-p1 .dotd-d-pts { color: var(--ssw-gold); font-size: 18px; }
+  .dotd-d-row:not(.is-p1) .dotd-d-pts { color: rgba(255,255,255,0.5); }
+
+  /* Animated fill bar */
+  .dotd-d-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.6s;
+    z-index: 0;
+  }
+  .dotd-d-row > * { position: relative; z-index: 1; }
+
+  /* Lead change burst */
+  @keyframes burstGold {
+    0%   { box-shadow: inset 0 0 30px rgba(212,175,55,0.5); }
+    100% { box-shadow: inset 0 0 0 rgba(212,175,55,0); }
+  }
+  .dotd-d-row.burst { animation: burstGold 1.5s ease-out; }
+
+
+  /* ── CONTROLS ── */
+  .controls {
+    margin-top: 40px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 620px;
+  }
+  .controls h3 {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--ssw-gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .btn {
+    display: inline-block;
+    padding: 8px 14px;
+    margin: 4px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn-gold { background: var(--ssw-gold); color: #000; }
+  .btn-green { background: #00e676; color: #000; }
+  .btn-red { background: #ff4646; color: #fff; }
+  .btn-dim { background: rgba(255,255,255,0.12); color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>Driver of the Day — Card Options</h1>
+<p class="subtitle">
+  Scoring: P1 shows total points. P2/P3 show gap to leader (e.g. "-21 pts").<br>
+  All numbers tick up live. Lead changes trigger morph/flash animations.<br>
+  Click the buttons below to simulate events across all four options simultaneously.
+</p>
+
+<div class="options-grid">
+
+  <!-- ══════ OPTION A ══════ -->
+  <div class="option-box">
+    <div class="option-label">Option A — Hero + Runners</div>
+    <div class="option-desc">Big hero card for P1 with points + photo. Runner cards show gap to leader with fill bars.</div>
+    <div class="dotd-a" id="dotd-a">
+      <div class="dotd-a-hero" id="a-hero">
+        <div class="dotd-a-hero-left">
+          <div class="dotd-a-tag">Driver of the Day</div>
+          <div class="dotd-a-score-row">
+            <div class="dotd-a-pts" id="a-pts">91</div>
+            <div class="dotd-a-unit">pts</div>
+          </div>
+          <div class="dotd-a-footer">
+            <div class="dotd-a-color-bar" id="a-bar" style="background: #64C4FF;"></div>
+            <div class="dotd-a-name" id="a-name">Colapinto</div>
+            <div class="dotd-a-pos" id="a-pos">Racing P9</div>
+          </div>
+        </div>
+        <div class="dotd-a-photo" id="a-photo" style="background-image: url('drivers/default_male_03.png');"></div>
+      </div>
+      <div class="dotd-a-runners">
+        <div class="dotd-a-runner" id="a-r1">
+          <div class="dotd-a-runner-top">
+            <div class="dotd-a-runner-rank">2nd</div>
+            <div class="dotd-a-runner-gap" id="a-r1-gap">-21</div>
+          </div>
+          <div class="dotd-a-runner-footer">
+            <div class="dotd-a-runner-bar" style="background: #FF8700;"></div>
+            <div class="dotd-a-runner-name" id="a-r1-name">Norris</div>
+          </div>
+          <div class="dotd-a-bar-track"><div class="dotd-a-bar-fill" id="a-r1-fill" style="width:77%; background: #FF8700;"></div></div>
+        </div>
+        <div class="dotd-a-runner" id="a-r2">
+          <div class="dotd-a-runner-top">
+            <div class="dotd-a-runner-rank">3rd</div>
+            <div class="dotd-a-runner-gap" id="a-r2-gap">-24</div>
+          </div>
+          <div class="dotd-a-runner-footer">
+            <div class="dotd-a-runner-bar" style="background: #229971;"></div>
+            <div class="dotd-a-runner-name" id="a-r2-name">Stroll</div>
+          </div>
+          <div class="dotd-a-bar-track"><div class="dotd-a-bar-fill" id="a-r2-fill" style="width:74%; background: #229971;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ OPTION B ══════ -->
+  <div class="option-box">
+    <div class="option-label">Option B — Unified Card</div>
+    <div class="option-desc">All 3 in one card. P1 row expanded with gold accent. Lead changes morph rows with flash. Sub-text shows race position.</div>
+    <div class="dotd-b" id="dotd-b">
+      <div class="dotd-b-header">
+        <div class="dotd-b-title">Driver of the Day</div>
+        <div class="dotd-b-live"><div class="dotd-b-live-dot"></div> Live</div>
+      </div>
+      <div class="dotd-b-rows" id="b-rows">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ OPTION C ══════ -->
+  <div class="option-box">
+    <div class="option-label">Option C — Gauge + Compact</div>
+    <div class="option-desc">Circular gauge for P1 score. Runner bars underneath. Points fill the arc proportionally.</div>
+    <div class="dotd-c" id="dotd-c">
+      <div class="dotd-c-hero" id="c-hero">
+        <div class="dotd-c-gauge">
+          <svg viewBox="0 0 72 72">
+            <circle class="dotd-c-gauge-bg" cx="36" cy="36" r="30"/>
+            <circle class="dotd-c-gauge-fill" id="c-gauge-fill" cx="36" cy="36" r="30"
+              stroke="#d4af37" stroke-dasharray="188.5" stroke-dashoffset="100"/>
+          </svg>
+          <div class="dotd-c-gauge-center">
+            <div class="dotd-c-gauge-num" id="c-pts">91</div>
+            <div class="dotd-c-gauge-label">pts</div>
+          </div>
+        </div>
+        <div class="dotd-c-info">
+          <div class="dotd-c-tag">Driver of the Day</div>
+          <div class="dotd-c-name" id="c-name">Colapinto</div>
+          <div class="dotd-c-meta" id="c-meta">Racing <span class="pos-tag">P9</span></div>
+        </div>
+      </div>
+      <div class="dotd-c-runners" id="c-runners">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ OPTION D ══════ -->
+  <div class="option-box">
+    <div class="option-label">Option D — Minimal Strip</div>
+    <div class="option-desc">Tight, compact. Background fill bar shows relative score. All data visible at a glance. P1 row slightly taller with gold.</div>
+    <div class="dotd-d" id="dotd-d">
+      <div class="dotd-d-header">
+        <div class="dotd-d-trophy">&#127942;</div>
+        <div class="dotd-d-title">Driver of the Day</div>
+        <div class="dotd-d-lap" id="d-lap">Lap 42/53</div>
+      </div>
+      <div id="d-rows">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── CONTROLS ── -->
+<div class="controls">
+  <h3>Simulate Events</h3>
+  <button class="btn btn-gold" onclick="simScoreTick()">Score Tick (+points)</button>
+  <button class="btn btn-green" onclick="simLeadChange()">Lead Change</button>
+  <button class="btn btn-red" onclick="simBigSwing()">Big Swing (new P3)</button>
+  <button class="btn btn-dim" onclick="simGapClose()">Gap Closes</button>
+  <button class="btn btn-dim" onclick="simReset()">Reset</button>
+</div>
+
+<script>
+// ── MOCK DATA ──────────────────────────────────
+const DRIVERS = {
+  "Colapinto": { color: "#64C4FF", img: "drivers/default_male_03.png" },
+  "Norris":    { color: "#FF8700", img: "drivers/default_male_05.png" },
+  "Stroll":    { color: "#229971", img: "drivers/default_male_07.png" },
+  "Hamilton":  { color: "#E8002D", img: "drivers/default_male_01.png" },
+  "Verstappen":{ color: "#3671C6", img: "drivers/default_male_09.png" },
+  "Leclerc":   { color: "#E8002D", img: "drivers/default_male_04.png" },
+};
+const COLORS = Object.fromEntries(Object.entries(DRIVERS).map(([k,v]) => [k, v.color]));
+
+let state = [
+  { name: "Colapinto", pts: 91,  racePos: 9,  color: COLORS.Colapinto },
+  { name: "Norris",    pts: 70,  racePos: 1,  color: COLORS.Norris },
+  { name: "Stroll",    pts: 67,  racePos: 10, color: COLORS.Stroll },
+];
+let prevLeader = "Colapinto";
+
+function sortState() {
+  state.sort((a, b) => b.pts - a.pts);
+}
+
+// ── RENDER ALL OPTIONS ─────────────────────────
+function renderAll(leadChanged = false, deposedName = null) {
+  sortState();
+  const maxPts = state[0].pts;
+  const newLeader = state[0].name;
+  const isNewLeader = newLeader !== prevLeader;
+
+  renderA(maxPts);
+  renderB(maxPts, isNewLeader, deposedName);
+  renderC(maxPts);
+  renderD(maxPts, isNewLeader);
+
+  prevLeader = newLeader;
+}
+
+// ── OPTION A ───────────────────────────────────
+let _prevHeroName = null;
+function renderA(maxPts) {
+  const d1 = state[0], d2 = state[1], d3 = state[2];
+  const heroEl = document.getElementById("a-hero");
+  const photoEl = document.getElementById("a-photo");
+  const leftEl = heroEl.querySelector(".dotd-a-hero-left");
+
+  // Hero points & name
+  document.getElementById("a-pts").textContent = d1.pts;
+  document.getElementById("a-name").textContent = d1.name;
+  document.getElementById("a-pos").textContent = "Racing P" + d1.racePos;
+  document.getElementById("a-bar").style.background = d1.color;
+
+  // Driver photo — full bleed behind the fade
+  const drvData = DRIVERS[d1.name] || {};
+  const img = drvData.img || "drivers/default_male.png";
+
+  // If leader changed, do a crossfade on the photo
+  if (_prevHeroName !== d1.name) {
+    photoEl.style.transition = "none";
+    photoEl.style.opacity = "0";
+    void photoEl.offsetWidth;
+    photoEl.style.backgroundImage = `url('${img}')`;
+    photoEl.style.transition = "opacity 0.8s ease-in-out";
+    requestAnimationFrame(() => { photoEl.style.opacity = "1"; });
+
+    // Flash the card border gold on lead change
+    if (_prevHeroName !== null) {
+      heroEl.classList.remove("hero-flash");
+      void heroEl.offsetWidth;
+      heroEl.classList.add("hero-flash");
+    }
+  }
+  _prevHeroName = d1.name;
+
+  // Team color accents
+  heroEl.style.setProperty('--hero-team-color', d1.color);
+  heroEl.style.background = `linear-gradient(135deg, ${d1.color}15, var(--surface-1) 50%)`;
+
+  // Runner 1
+  const r1El = document.getElementById("a-r1");
+  document.getElementById("a-r1-gap").textContent = "-" + (d1.pts - d2.pts);
+  document.getElementById("a-r1-name").textContent = d2.name;
+  document.getElementById("a-r1-fill").style.width = (d2.pts / maxPts * 100) + "%";
+  document.getElementById("a-r1-fill").style.background = d2.color;
+  document.querySelector("#a-r1 .dotd-a-runner-bar").style.background = d2.color;
+  r1El.style.background = `linear-gradient(135deg, ${d2.color}12, var(--surface-1) 60%)`;
+
+  // Runner 2
+  const r2El = document.getElementById("a-r2");
+  document.getElementById("a-r2-gap").textContent = "-" + (d1.pts - d3.pts);
+  document.getElementById("a-r2-name").textContent = d3.name;
+  document.getElementById("a-r2-fill").style.width = (d3.pts / maxPts * 100) + "%";
+  document.getElementById("a-r2-fill").style.background = d3.color;
+  document.querySelector("#a-r2 .dotd-a-runner-bar").style.background = d3.color;
+  r2El.style.background = `linear-gradient(135deg, ${d3.color}12, var(--surface-1) 60%)`;
+}
+
+// ── OPTION B ───────────────────────────────────
+function renderB(maxPts, isNewLeader, deposedName) {
+  const container = document.getElementById("b-rows");
+  const existing = container.querySelectorAll(".dotd-b-row");
+
+  state.forEach((d, i) => {
+    let row = existing[i];
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "dotd-b-row";
+      row.innerHTML = `
+        <div class="dotd-b-rank"></div>
+        <div class="dotd-b-color"></div>
+        <div class="dotd-b-info">
+          <div class="dotd-b-name"></div>
+          <div class="dotd-b-sub"></div>
+        </div>
+        <div class="dotd-b-score">
+          <div class="dotd-b-pts"></div>
+          <div class="dotd-b-gap"></div>
+        </div>
+        <div class="dotd-b-bar"></div>
+      `;
+      container.appendChild(row);
+    }
+
+    row.className = "dotd-b-row" + (i === 0 ? " is-leader" : "");
+    row.querySelector(".dotd-b-rank").textContent = i + 1;
+    row.querySelector(".dotd-b-color").style.background = d.color;
+    row.querySelector(".dotd-b-name").textContent = d.name;
+    row.querySelector(".dotd-b-sub").innerHTML = `<span class="race-pos">P${d.racePos}</span>`;
+    row.querySelector(".dotd-b-pts").textContent = d.pts;
+    row.querySelector(".dotd-b-gap").textContent = i === 0 ? "leader" : `-${state[0].pts - d.pts} pts`;
+    row.querySelector(".dotd-b-bar").style.width = (d.pts / maxPts * 100) + "%";
+    row.querySelector(".dotd-b-bar").style.background = d.color;
+
+    // Flash animations on lead change
+    if (isNewLeader && i === 0) {
+      row.classList.remove("new-leader");
+      void row.offsetWidth;
+      row.classList.add("new-leader");
+    }
+    if (deposedName && d.name === deposedName) {
+      row.classList.remove("deposed");
+      void row.offsetWidth;
+      row.classList.add("deposed");
+    }
+  });
+}
+
+// ── OPTION C ───────────────────────────────────
+function renderC(maxPts) {
+  const d1 = state[0];
+  const circumference = 2 * Math.PI * 30; // ~188.5
+
+  // Gauge fill (scale: 0 pts = empty, maxPts*1.3 = full)
+  const fillPct = Math.min(d1.pts / (maxPts * 1.3), 1);
+  const offset = circumference * (1 - fillPct);
+  const gauge = document.getElementById("c-gauge-fill");
+  gauge.style.strokeDashoffset = offset;
+  gauge.style.stroke = d1.color;
+
+  document.getElementById("c-pts").textContent = d1.pts;
+  document.getElementById("c-name").textContent = d1.name;
+  document.getElementById("c-meta").innerHTML = `Racing <span class="pos-tag">P${d1.racePos}</span>`;
+
+  // Runners
+  const cont = document.getElementById("c-runners");
+  cont.innerHTML = "";
+  for (let i = 1; i < state.length; i++) {
+    const d = state[i];
+    const gap = state[0].pts - d.pts;
+    const barPct = d.pts / maxPts * 100;
+    cont.innerHTML += `
+      <div class="dotd-c-rn">
+        <div class="dotd-c-rn-rank">${i + 1}</div>
+        <div class="dotd-c-rn-color" style="background:${d.color}"></div>
+        <div class="dotd-c-rn-name">${d.name}</div>
+        <div class="dotd-c-rn-gap">-${gap}</div>
+        <div class="dotd-c-rn-bar" style="width:${barPct}%; background:${d.color}"></div>
+      </div>
+    `;
+  }
+}
+
+// ── OPTION D ───────────────────────────────────
+function renderD(maxPts, isNewLeader) {
+  const cont = document.getElementById("d-rows");
+  const existing = cont.querySelectorAll(".dotd-d-row");
+
+  state.forEach((d, i) => {
+    let row = existing[i];
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "dotd-d-row";
+      row.innerHTML = `
+        <div class="dotd-d-rank"></div>
+        <div class="dotd-d-color"></div>
+        <div class="dotd-d-name"></div>
+        <div class="dotd-d-rpos"></div>
+        <div class="dotd-d-pts"></div>
+        <div class="dotd-d-fill"></div>
+      `;
+      cont.appendChild(row);
+    }
+
+    row.className = "dotd-d-row" + (i === 0 ? " is-p1" : "");
+    row.querySelector(".dotd-d-rank").textContent = i + 1;
+    row.querySelector(".dotd-d-color").style.background = d.color;
+    row.querySelector(".dotd-d-name").textContent = d.name;
+    row.querySelector(".dotd-d-rpos").textContent = "P" + d.racePos;
+    row.querySelector(".dotd-d-pts").textContent = i === 0 ? d.pts + " pts" : "-" + (state[0].pts - d.pts);
+    row.querySelector(".dotd-d-fill").style.width = (d.pts / maxPts * 100) + "%";
+    row.querySelector(".dotd-d-fill").style.background = d.color + "18";
+
+    if (isNewLeader && i === 0) {
+      row.classList.remove("burst");
+      void row.offsetWidth;
+      row.classList.add("burst");
+    }
+  });
+}
+
+// ── SIMULATIONS ────────────────────────────────
+function simScoreTick() {
+  // Add random points to each driver
+  state.forEach(d => {
+    d.pts += Math.floor(Math.random() * 8) + 1;
+  });
+  renderAll();
+}
+
+function simLeadChange() {
+  const old = state[0].name;
+  // Boost P2 past P1
+  state[1].pts = state[0].pts + Math.floor(Math.random() * 5) + 3;
+  renderAll(true, old);
+}
+
+function simBigSwing() {
+  // New driver enters top 3
+  const newDriver = { name: "Hamilton", pts: state[2].pts + 15, racePos: 4, color: COLORS.Hamilton };
+  state[2] = newDriver;
+  renderAll();
+}
+
+function simGapClose() {
+  // Close the gap between P2 and P1
+  state[1].pts = state[0].pts - 2;
+  state[2].pts = state[0].pts - 5;
+  renderAll();
+}
+
+function simReset() {
+  state = [
+    { name: "Colapinto", pts: 91,  racePos: 9,  color: COLORS.Colapinto },
+    { name: "Norris",    pts: 70,  racePos: 1,  color: COLORS.Norris },
+    { name: "Stroll",    pts: 67,  racePos: 10, color: COLORS.Stroll },
+  ];
+  prevLeader = "Colapinto";
+  _prevHeroName = null;
+  renderAll();
+}
+
+// Auto-tick points every 3 seconds
+setInterval(() => {
+  state.forEach(d => { d.pts += Math.floor(Math.random() * 3); });
+  renderAll();
+}, 3000);
+
+// Initial render
+renderAll();
+</script>
+</body>
+</html>

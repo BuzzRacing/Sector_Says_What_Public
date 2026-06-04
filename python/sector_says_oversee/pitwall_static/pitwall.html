@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pit Wall | Sector Says What</title>
+  <link rel="stylesheet" href="/pitwall/static/pitwall.css">
+</head>
+<body>
+
+<div class="pitwall-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img id="sidebar-logo" src="/backgrounds/sector_says_what_logo_alternate.png" alt="Sector Says What" class="sidebar-logo"
+           onerror="this.style.display='none'; document.getElementById('sidebar-brand-fallback').style.display='block';">
+      <div id="sidebar-brand-fallback" class="sidebar-brand-text" style="display:none">
+        <h1>SECTOR SAYS WHAT</h1>
+        <div class="sub">Pit Wall Control</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#broadcast" class="active" data-tab="broadcast">
+        <span class="icon">&#9654;</span> Broadcast
+      </a>
+      <div class="sidebar-divider"></div>
+
+      <div class="nav-group" data-group="commentators">
+        <button type="button" class="nav-group-toggle">
+          <span class="icon">&#9834;</span>
+          <span class="label">Commentators</span>
+          <span class="caret">&#9662;</span>
+        </button>
+        <div class="nav-group-items">
+          <a href="#race-room" data-tab="race-room">Race Room</a>
+          <a href="#owner-driver" data-tab="owner-driver">Owner Driver</a>
+          <a href="#broadcast-team" data-tab="broadcast-team">Broadcast Team</a>
+          <a href="#race-control" data-tab="race-control">Race Control</a>
+          <a href="#prompts" data-tab="prompts">Prompts</a>
+        </div>
+      </div>
+
+      <div class="nav-group" data-group="directors-room">
+        <button type="button" class="nav-group-toggle">
+          <span class="icon">&#9881;</span>
+          <span class="label">Directors Room</span>
+          <span class="caret">&#9662;</span>
+        </button>
+        <div class="nav-group-items">
+          <a href="#stewards" data-tab="stewards">Stewards' Office</a>
+          <a href="#marshalling" data-tab="marshalling">Marshalling</a>
+          <a href="#power-unit" data-tab="power-unit">Power Unit</a>
+        </div>
+      </div>
+
+      <a href="#media" data-tab="media">
+        <span class="icon">&#9881;</span> Media Gallery
+      </a>
+
+      <div class="nav-group" data-group="replay">
+        <button type="button" class="nav-group-toggle">
+          <span class="icon">&#9655;</span>
+          <span class="label">Replay</span>
+          <span class="caret">&#9662;</span>
+        </button>
+        <div class="nav-group-items">
+          <a href="/replays" target="_blank" rel="noopener">Race Replay</a>
+          <a href="#race-archives" data-tab="race-archives">Race Archives</a>
+          <a href="#circuits" data-tab="circuits">Circuits</a>
+          <a href="#garage" data-tab="garage">Garage</a>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="/">&larr; RACE HUD</a>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ====== BROADCAST CONTROL ====== -->
+    <section id="broadcast" class="tab-section active">
+      <div class="page-header">
+        <div><h2>Broadcast Control</h2><div class="subtitle">Start your broadcast, monitor the race, and let the commentary team run the show</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('broadcast')">Set Background</button>
+      </div>
+
+      <!-- Status Bar with progress -->
+      <div class="broadcast-status" id="bc-status-bar">
+        <div class="bc-status-left">
+          <div class="status-dot idle" id="bc-dot"></div>
+          <div>
+            <div class="status-text" id="bc-status-text">IDLE</div>
+            <div class="status-sub" id="bc-status-sub">No active broadcast</div>
+          </div>
+        </div>
+        <div class="bc-progress-wrap" id="bc-progress-wrap" style="display:none">
+          <div class="bc-progress-bar"><div class="bc-progress-fill" id="bc-progress-fill" style="width:0%"></div></div>
+          <div class="bc-progress-label" id="bc-progress-label">0%</div>
+        </div>
+        <div class="bc-status-right">
+          <button class="btn btn-success btn-lg" id="bc-start" onclick="broadcastStart()">Lights Out</button>
+          <button class="btn btn-danger btn-lg" id="bc-stop" onclick="broadcastStop()" style="display:none">Red Flag</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards (6 across) -->
+      <div class="bc-stat-grid">
+        <div class="stat-card"><div class="stat-value" id="bc-lap">--</div><div class="stat-label">Lap</div></div>
+        <div class="stat-card"><div class="stat-value" id="bc-cars">--</div><div class="stat-label">Cars</div></div>
+        <div class="stat-card"><div class="stat-value" id="bc-commentary">0</div><div class="stat-label">Commentary</div></div>
+        <div class="stat-card"><div class="stat-value" id="bc-elapsed">00:00</div><div class="stat-label">Elapsed</div></div>
+        <div class="stat-card"><div class="stat-value" id="bc-rate">--</div><div class="stat-label">Per Min</div></div>
+        <div class="stat-card"><div class="stat-value" id="bc-last-trigger">--</div><div class="stat-label">Last Trigger</div></div>
+      </div>
+
+      <!-- Last Commentary Highlight (radio style) -->
+      <div class="bc-last-commentary" id="bc-last-commentary" style="display:none"></div>
+
+      <!-- Live Commentary Feed -->
+      <div class="card mt">
+        <div class="flex-between">
+          <h3>Live Commentary Feed</h3>
+          <div class="flex-row" style="gap:8px">
+            <span style="font-size:11px;color:var(--text-dim)" id="bc-feed-count">0 events</span>
+            <a href="/" target="_blank" class="btn btn-sm btn-secondary">Open Race HUD</a>
+          </div>
+        </div>
+        <div class="trigger-feed" id="bc-feed">
+          <div class="empty-state"><div class="empty-text">Commentary events will appear here during the broadcast</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== RACE ROOM ====== -->
+    <section id="race-room" class="tab-section">
+      <div class="page-header">
+        <div><h2>Race Room</h2><div class="subtitle">Pre-race configuration &mdash; set up your broadcast before lights out</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('race-room')">Set Background</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Active Commentators</h3>
+          <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 12px">Hover to preview — toggle who is on air</p>
+          <div class="rr-caster-layout">
+            <div class="rr-caster-list" id="rr-commentators"></div>
+            <div class="rr-caster-preview" id="rr-caster-preview">
+              <div class="rr-preview-empty">Hover a name to preview</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Host Rotation Order</h3>
+          <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 12px">Who anchors each quarter of the race</p>
+          <div id="rr-rotation" class="field"></div>
+
+          <h3 style="margin-top:20px">Location Assignments</h3>
+          <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 12px">Which commentator covers each broadcast position</p>
+          <div id="rr-locations" class="field"></div>
+        </div>
+      </div>
+
+      <div class="card card-accent">
+        <h3>AI &amp; Audio</h3>
+        <div class="grid-2">
+          <div class="field"><label>AI Commentary Temperature</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rr-ai-temp" min="0" max="1" step="0.05" value="0.5"><div class="rc-slider-labels"><span>Precise</span><span class="rc-slider-value" id="rr-ai-temp-val">0.50</span><span>Creative</span></div></div>
+          </div>
+          <div class="field"><label>Max Tokens (commentary length)</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rr-max-tokens" min="50" max="500" step="25" value="250"><div class="rc-slider-labels"><span>50</span><span class="rc-slider-value" id="rr-max-tokens-val">250</span><span>500</span></div></div>
+          </div>
+          <div class="field"><label>Ambient Audio Volume</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rr-ambient-vol" min="0" max="1" step="0.05" value="0.5"><div class="rc-slider-labels"><span>Off</span><span class="rc-slider-value" id="rr-ambient-vol-val">0.50</span><span>Full</span></div></div>
+          </div>
+          <div class="field"><label>AI Model</label>
+            <select id="rr-ai-model">
+              <option value="gpt-4o-mini">GPT-4o Mini (fast)</option>
+              <option value="gpt-4o">GPT-4o (quality)</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (budget)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-accent">
+        <h3>Focus Driver</h3>
+        <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 12px">Choose your driver &mdash; commentary, predictions, and replays will centre around them</p>
+        <div class="grid-2">
+          <div class="field">
+            <label>Focus Driver</label>
+            <select id="rr-focus-driver" onchange="setFocusDriver()"><option value="">— Not set —</option></select>
+          </div>
+          <div class="field" id="rr-focus-info" style="display:none">
+            <label>Current</label>
+            <div class="rr-focus-badge" id="rr-focus-badge"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>System</h3>
+        <div class="grid-2">
+          <div class="field">
+            <label>TTS Enabled</label>
+            <label class="toggle"><input type="checkbox" id="rr-tts" checked><span class="slider"></span></label>
+          </div>
+          <div class="field">
+            <label>Audio Output Device</label>
+            <select id="rr-audio-device"><option value="0">Loading…</option></select>
+          </div>
+        </div>
+        <div class="mt">
+          <button class="btn btn-primary" onclick="saveConfig()">Save Configuration</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== OWNER DRIVER ====== -->
+    <section id="owner-driver" class="tab-section">
+      <div class="page-header">
+        <div><h2>Owner Driver</h2><div class="subtitle">Your driver profiles &mdash; customise how the AI talks about you</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('owner-driver')">Set Background</button>
+      </div>
+
+      <!-- Profile Cards Grid -->
+      <div class="profile-grid" id="od-grid"></div>
+
+      <!-- Expanded Profile Detail (hidden until a card is clicked) -->
+      <div id="od-detail" style="display:none">
+        <div class="profile-detail">
+          <div class="profile-detail-layout">
+            <!-- Left sidebar: full-bleed image + overlay -->
+            <div class="profile-detail-sidebar">
+              <div class="profile-detail-portrait" id="od-photo-wrap"></div>
+              <div class="profile-detail-sidebar-overlay">
+                <div class="profile-detail-sidebar-spacer"></div>
+                <div class="profile-detail-nameplate">
+                  <div class="profile-detail-firstname" id="od-detail-firstname"></div>
+                  <div class="profile-detail-lastname" id="od-detail-lastname"></div>
+                </div>
+                <div class="profile-detail-stats" id="od-detail-stats"></div>
+              </div>
+            </div>
+
+            <!-- Right content -->
+            <div class="profile-detail-content">
+              <div class="profile-detail-bio" id="od-detail-bio"></div>
+              <div class="profile-detail-actions">
+                <button class="btn btn-sm btn-primary" onclick="odSave()">Save Profile</button>
+                <button class="btn btn-sm btn-secondary" onclick="odSetActive()">Set Active</button>
+                <button class="btn btn-sm btn-danger" onclick="odDelete()">Delete</button>
+                <button class="btn btn-sm" onclick="odCloseDetail()">Close</button>
+              </div>
+
+              <div class="profile-section-title">Identity</div>
+              <div class="grid-3">
+                <div class="field"><label>Display Name</label><input type="text" id="od-name"></div>
+                <div class="field"><label>Nickname</label><input type="text" id="od-nickname"></div>
+                <div class="field"><label>Team Name</label><input type="text" id="od-team"></div>
+              </div>
+              <div class="field"><label>Bio</label><textarea id="od-bio" placeholder="Tell us about yourself..."></textarea></div>
+
+              <div class="profile-section-title">iRacing</div>
+              <div class="grid-3">
+                <div class="field"><label>iRacing Customer ID</label><input type="text" id="od-iracing-id" placeholder="e.g. 123456"></div>
+                <div class="field"><label>Car Number</label><input type="text" id="od-car-number" placeholder="e.g. 42"></div>
+                <div class="field"><label>Driving Style</label><input type="text" id="od-style" placeholder="e.g. aggressive, calculated"></div>
+              </div>
+
+              <div class="profile-section-title">Commentary</div>
+              <div class="grid-2">
+                <div class="field">
+                  <label>Commentary Frequency</label>
+                  <select id="od-frequency">
+                    <option value="low">Low</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="star">Star Driver</option>
+                  </select>
+                </div>
+                <div class="field"><label>Featured Phrases</label><input type="text" id="od-phrases" placeholder="Comma-separated phrases"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Career Stats -->
+        <div class="grid-2">
+          <div class="card">
+            <h3>Career Stats</h3>
+            <div id="od-career-stats"><p style="color:var(--text-dim)">Complete a race to see your stats here.</p></div>
+          </div>
+          <div class="card">
+            <h3>Recent Races</h3>
+            <div id="od-recent-races"></div>
+          </div>
+        </div>
+
+        <!-- Tagged Photos -->
+        <div class="card">
+          <h3>Photos <span id="od-photos-count" style="color:var(--text-dim);font-weight:normal;font-size:13px"></span></h3>
+          <p style="color:var(--text-dim);font-size:12px;margin:-4px 0 12px">
+            Any image tagged with this driver's display name in the Media gallery appears here.
+          </p>
+          <div id="od-photos" class="mg-gallery mg-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== BROADCAST TEAM ====== -->
+    <section id="broadcast-team" class="tab-section">
+      <div class="page-header">
+        <div><h2>Broadcast Team</h2><div class="subtitle">Manage your commentator roster, voices, and personalities</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('broadcast-team')">Set Background</button>
+      </div>
+
+      <!-- Profile Cards Grid -->
+      <div class="profile-grid" id="bt-grid"></div>
+
+      <!-- Expanded Profile Detail -->
+      <div id="bt-detail" style="display:none">
+        <div class="profile-detail">
+          <div class="profile-detail-layout">
+            <!-- Left sidebar: full-bleed image + overlay -->
+            <div class="profile-detail-sidebar">
+              <div class="profile-detail-portrait" id="bt-photo-wrap"></div>
+              <div class="profile-detail-sidebar-overlay">
+                <div class="profile-detail-sidebar-spacer"></div>
+                <div class="profile-detail-nameplate">
+                  <div class="profile-detail-lastname" id="bt-detail-lastname"></div>
+                </div>
+                <div class="profile-detail-stats" id="bt-detail-stats"></div>
+              </div>
+            </div>
+
+            <!-- Right content -->
+            <div class="profile-detail-content">
+              <div class="profile-detail-bio" id="bt-detail-bio"></div>
+              <div class="profile-detail-actions">
+                <button class="btn btn-sm btn-primary" onclick="btSave()">Save Profile</button>
+                <button class="btn btn-sm btn-secondary" id="bt-preview-btn" onclick="btPreviewVoice()">Preview Voice</button>
+                <button class="btn btn-sm" onclick="btToggleActive()" id="bt-toggle-btn">Deactivate</button>
+                <button class="btn btn-sm btn-danger" onclick="btDelete()">Delete</button>
+                <button class="btn btn-sm" onclick="btCloseDetail()">Close</button>
+              </div>
+
+              <div class="profile-section-title">Identity</div>
+              <div class="grid-3">
+                <div class="field"><label>Persona (Think...)</label><input type="text" id="bt-think" placeholder="e.g. Murray Walker"></div>
+                <div class="field"><label>Nationality</label><input type="text" id="bt-nationality"></div>
+                <div class="field"><label>Age</label><input type="text" id="bt-age"></div>
+              </div>
+              <div class="field"><label>Bio / Backstory</label><textarea id="bt-bio" placeholder="Character backstory and personality..."></textarea></div>
+              <div class="field"><label>Catchphrase</label><input type="text" id="bt-catchphrase" placeholder="Signature phrase"></div>
+
+              <div class="profile-section-title">Broadcast Role</div>
+              <div class="grid-3">
+                <div class="field"><label>Location</label>
+                  <select id="bt-location">
+                    <option>Studio</option><option>PitLane</option><option>Paddock</option><option>FanZone</option><option>Trackside</option><option>Garage</option>
+                  </select>
+                </div>
+                <div class="field"><label>Commentary Style</label><input type="text" id="bt-style" placeholder="e.g. Warm, reflective, poetic"></div>
+                <div class="field"><label>Energy Level</label><input type="text" id="bt-energy" placeholder="e.g. high-octane hype"></div>
+              </div>
+
+              <div class="profile-section-title">Voice &amp; TTS</div>
+              <div class="grid-3">
+                <div class="field"><label>Voice Description</label><input type="text" id="bt-voice" placeholder="e.g. Classic British, excitable"></div>
+                <div class="field"><label>Inworld Voice ID</label><input type="text" id="bt-voiceid" placeholder="e.g. Ronald"></div>
+                <div class="field"><label>Speaking Rate</label>
+                  <div class="range-row"><input type="range" id="bt-rate" min="0.5" max="2.0" step="0.1" value="1.3"><span class="range-val" id="bt-rate-val">1.3</span></div>
+                </div>
+              </div>
+
+              <div class="profile-section-title">Image Generation</div>
+              <div class="field"><label>Physical Description</label><textarea id="bt-physical" placeholder="Detailed physical appearance for AI image generation..."></textarea></div>
+
+              <div class="profile-section-title">Tagged Images</div>
+              <div class="bt-image-gallery" id="bt-image-gallery">
+                <div class="bt-gallery-empty">No images tagged for this commentator.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <audio id="bt-audio-preview" style="display:none"></audio>
+      </div>
+    </section>
+
+    <!-- ====== RACE CONTROL ====== -->
+    <section id="race-control" class="tab-section">
+      <div class="page-header">
+        <div><h2>Race Control</h2><div class="subtitle">Tune triggers, cooldowns, detection thresholds, and race timing</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('race-control')">Set Background</button>
+      </div>
+
+      <!-- Global Timing -->
+      <div class="card card-accent">
+        <h3>Global Timing</h3>
+        <div class="grid-2">
+          <div class="field"><label>Default Cooldown</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rc-cooldown" min="5" max="120" step="1" value="30"><div class="rc-slider-labels"><span>5s</span><span class="rc-slider-value" id="rc-cooldown-val">30s</span><span>120s</span></div></div>
+          </div>
+          <div class="field"><label>Flag Cooldown</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rc-flag-cd" min="5" max="120" step="1" value="30"><div class="rc-slider-labels"><span>5s</span><span class="rc-slider-value" id="rc-flag-cd-val">30s</span><span>120s</span></div></div>
+          </div>
+          <div class="field"><label>Midfield Battle Cooldown</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rc-midfield" min="30" max="600" step="10" value="260"><div class="rc-slider-labels"><span>30s</span><span class="rc-slider-value" id="rc-midfield-val">260s</span><span>10m</span></div></div>
+          </div>
+          <div class="field"><label>Race Summary Interval</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="rc-summary" min="15" max="180" step="5" value="60"><div class="rc-slider-labels"><span>15s</span><span class="rc-slider-value" id="rc-summary-val">60s</span><span>3m</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Event Triggers -->
+      <div class="card">
+        <h3>Live Race Events</h3>
+        <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">These fire in real-time when detected during the race</p>
+        <div class="rc-trigger-grid" id="rc-live-triggers"></div>
+      </div>
+
+      <!-- Scheduled Segment Triggers -->
+      <div class="card">
+        <h3>Scheduled Segments</h3>
+        <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">These fire at specific race progress percentages</p>
+        <div class="rc-trigger-grid" id="rc-scheduled-triggers"></div>
+      </div>
+
+      <div class="mt flex-row" style="gap:12px">
+        <button class="btn btn-primary" onclick="saveRaceControl()">Save Race Control</button>
+        <button class="btn btn-secondary" onclick="rcReloadConfig()">Reload from Disk</button>
+      </div>
+    </section>
+
+    <!-- ====== STEWARDS' OFFICE ====== -->
+    <section id="stewards" class="tab-section">
+      <div class="page-header">
+        <div><h2>Stewards' Office</h2><div class="subtitle">Driver of the Day scoring weights, trigger management, and diminishing returns</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('stewards')">Set Background</button>
+      </div>
+
+      <!-- Diminishing Returns & Caps -->
+      <div class="card card-accent">
+        <h3>Scoring Limits</h3>
+        <div class="grid-3">
+          <div class="field"><label>Cap Per Lap (max points earned in one lap)</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="st-cap" min="50" max="1000" step="25" value="300"><div class="rc-slider-labels"><span>50</span><span class="rc-slider-value" id="st-cap-val">300</span><span>1000</span></div></div>
+          </div>
+          <div class="field"><label>Diminishing Returns</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+              <button class="rc-trigger-toggle on" id="st-dim-toggle" onclick="this.classList.toggle('on')" title="Toggle diminishing returns"></button>
+              <span style="font-size:12px;color:var(--text-mid)">Repeat triggers score less each time</span>
+            </div>
+          </div>
+          <div class="field"><label>Decay Steps (multipliers)</label>
+            <input type="text" id="st-decay" value="1.0, 0.8, 0.6, 0.4" placeholder="e.g. 1.0, 0.8, 0.6, 0.4">
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px">1st fire = 100%, 2nd = 80%, 3rd = 60%, etc.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Scoring Triggers -->
+      <div class="card">
+        <h3>Active Scoring Triggers</h3>
+        <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">These triggers actively affect DOTD scoring during the race</p>
+        <div class="st-trigger-grid" id="st-active-triggers"></div>
+      </div>
+
+      <!-- Disabled / Available Triggers -->
+      <div class="card">
+        <h3>Disabled Triggers</h3>
+        <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">Available but currently inactive — toggle them on to start scoring</p>
+        <div class="st-trigger-grid" id="st-disabled-triggers"></div>
+      </div>
+
+      <!-- Add New Trigger -->
+      <div class="mt flex-row" style="gap:12px">
+        <button class="btn btn-primary" onclick="saveStewards()">Save DOTD Config</button>
+        <button class="btn btn-secondary" onclick="stAddTrigger()">Add Custom Trigger</button>
+      </div>
+    </section>
+
+    <!-- ====== MARSHALLING ====== -->
+    <section id="marshalling" class="tab-section">
+      <div class="page-header">
+        <div><h2>Marshalling</h2><div class="subtitle">Detection thresholds, sector boundaries, and incident sensitivity</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('marshalling')">Set Background</button>
+      </div>
+
+      <div class="card card-accent">
+        <h3>Sector Boundaries</h3>
+        <p style="font-size:11px;color:var(--text-dim);margin:-8px 0 16px">Randomised within these ranges each session to keep sectors fresh</p>
+        <div class="grid-2">
+          <div class="field"><label>S1 Start</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-s1-lo" min="0.20" max="0.40" step="0.01" value="0.30"><div class="rc-slider-labels"><span>20%</span><span class="rc-slider-value" id="ma-s1-lo-val">0.30</span><span>40%</span></div></div>
+          </div>
+          <div class="field"><label>S1 End</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-s1-hi" min="0.30" max="0.45" step="0.01" value="0.36"><div class="rc-slider-labels"><span>30%</span><span class="rc-slider-value" id="ma-s1-hi-val">0.36</span><span>45%</span></div></div>
+          </div>
+          <div class="field"><label>S2 Start</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-s2-lo" min="0.55" max="0.70" step="0.01" value="0.63"><div class="rc-slider-labels"><span>55%</span><span class="rc-slider-value" id="ma-s2-lo-val">0.63</span><span>70%</span></div></div>
+          </div>
+          <div class="field"><label>S2 End</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-s2-hi" min="0.60" max="0.75" step="0.01" value="0.69"><div class="rc-slider-labels"><span>60%</span><span class="rc-slider-value" id="ma-s2-hi-val">0.69</span><span>75%</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Collision Detection</h3>
+          <div class="field"><label>Cooldown</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-col-cd" min="5" max="120" step="1" value="30"><div class="rc-slider-labels"><span>5s</span><span class="rc-slider-value" id="ma-col-cd-val">30s</span><span>120s</span></div></div>
+          </div>
+          <div class="field"><label>Compound Yaw Threshold</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-col-yaw" min="0.5" max="6.0" step="0.1" value="2.0"><div class="rc-slider-labels"><span>0.5</span><span class="rc-slider-value" id="ma-col-yaw-val">2.0</span><span>6.0</span></div></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">rad/s — lower = more sensitive</div>
+          </div>
+          <div class="field"><label>Recovery Yaw Threshold</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-col-ryaw" min="1.0" max="8.0" step="0.1" value="3.0"><div class="rc-slider-labels"><span>1.0</span><span class="rc-slider-value" id="ma-col-ryaw-val">3.0</span><span>8.0</span></div></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">rad/s — detects recovery attempts</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Off-Track Detection</h3>
+          <div class="field"><label>Cooldown</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-ot-cd" min="5" max="120" step="1" value="30"><div class="rc-slider-labels"><span>5s</span><span class="rc-slider-value" id="ma-ot-cd-val">30s</span><span>120s</span></div></div>
+          </div>
+          <div class="field"><label>Spin Yaw Threshold</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-ot-yaw" min="1.0" max="10.0" step="0.5" value="5.0"><div class="rc-slider-labels"><span>1.0</span><span class="rc-slider-value" id="ma-ot-yaw-val">5.0</span><span>10.0</span></div></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">rad/s — lower = catches smaller spins</div>
+          </div>
+          <div class="field"><label>Spin RPM Threshold</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-ot-rpm" min="100" max="2000" step="50" value="500"><div class="rc-slider-labels"><span>100</span><span class="rc-slider-value" id="ma-ot-rpm-val">500</span><span>2000</span></div></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">Engine must be above this RPM to count as spin</div>
+          </div>
+          <div class="field"><label>Multi-Car Threshold</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="ma-ot-multi" min="2" max="10" step="1" value="3"><div class="rc-slider-labels"><span>2</span><span class="rc-slider-value" id="ma-ot-multi-val">3</span><span>10</span></div></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">Cars off-track simultaneously to trigger multi-car incident</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt"><button class="btn btn-primary" onclick="saveMarshalling()">Save Marshalling</button></div>
+    </section>
+
+    <!-- ====== POWER UNIT ====== -->
+    <section id="power-unit" class="tab-section">
+      <div class="page-header">
+        <div><h2>Power Unit</h2><div class="subtitle">AI model and text-to-speech configuration</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('power-unit')">Set Background</button>
+      </div>
+      <!-- Provider toggle -->
+      <div class="card card-accent mb">
+        <h3>Commentary AI Provider</h3>
+        <div class="field"><label>Active Provider</label>
+          <select id="pu-provider" style="font-size:14px">
+            <option value="openai">OpenAI (Cloud)</option>
+            <option value="local_llm">Local LLM (Self-hosted)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <!-- OpenAI card -->
+        <div class="card" id="pu-openai-card">
+          <h3>OpenAI</h3>
+          <div class="field"><label>Model</label>
+            <select id="pu-model">
+              <option value="gpt-4o-mini">GPT-4o Mini (fast)</option>
+              <option value="gpt-4o">GPT-4o (quality)</option>
+              <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+              <option value="gpt-4.1">GPT-4.1</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (budget)</option>
+            </select>
+          </div>
+          <div class="field"><label>Temperature</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-temp" min="0" max="2" step="0.05" value="0.5"><div class="rc-slider-labels"><span>Precise</span><span class="rc-slider-value" id="pu-temp-val">0.50</span><span>Creative</span></div></div>
+          </div>
+          <div class="field"><label>Max Tokens</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-tokens" min="50" max="1000" step="10" value="250"><div class="rc-slider-labels"><span>50</span><span class="rc-slider-value" id="pu-tokens-val">250</span><span>1000</span></div></div>
+          </div>
+        </div>
+        <!-- Local LLM card -->
+        <div class="card" id="pu-local-card">
+          <h3>Local LLM</h3>
+          <div class="field"><label>Base URL</label>
+            <input type="text" id="pu-local-url" placeholder="http://192.168.1.100:1234/v1">
+          </div>
+          <div class="field"><label>API Key</label>
+            <input type="text" id="pu-local-key" placeholder="not-needed (leave blank if none)">
+          </div>
+          <div class="field"><label>Model Name</label>
+            <input type="text" id="pu-local-model" placeholder="local-model">
+          </div>
+          <div class="field"><label>Temperature</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-local-temp" min="0" max="2" step="0.05" value="0.5"><div class="rc-slider-labels"><span>Precise</span><span class="rc-slider-value" id="pu-local-temp-val">0.50</span><span>Creative</span></div></div>
+          </div>
+          <div class="field"><label>Max Tokens</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-local-tokens" min="50" max="1000" step="10" value="250"><div class="rc-slider-labels"><span>50</span><span class="rc-slider-value" id="pu-local-tokens-val">250</span><span>1000</span></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Inworld TTS</h3>
+          <div class="field"><label>Model ID</label><input type="text" id="pu-tts-model" value="inworld-tts-1.5-mini"></div>
+          <div class="field"><label>Audio Encoding</label>
+            <select id="pu-tts-enc"><option value="MP3">MP3</option><option value="WAV">WAV</option></select>
+          </div>
+          <div class="field"><label>Temperature</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-tts-temp" min="0" max="1.5" step="0.01" value="0.79"><div class="rc-slider-labels"><span>Flat</span><span class="rc-slider-value" id="pu-tts-temp-val">0.79</span><span>Expressive</span></div></div>
+          </div>
+          <div class="field"><label>Default Speaking Rate</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-tts-rate" min="0.5" max="2.0" step="0.1" value="1.3"><div class="rc-slider-labels"><span>0.5x</span><span class="rc-slider-value" id="pu-tts-rate-val">1.3</span><span>2.0x</span></div></div>
+          </div>
+        </div>
+        <!-- iRacing /data API card -->
+        <div class="card" id="pu-iracing-card">
+          <h3>iRacing Data API <span id="pu-ir-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-left:6px;vertical-align:middle"></span></h3>
+          <div class="field">
+            <label class="rc-toggle">
+              <input type="checkbox" id="pu-ir-enabled">
+              <span>Enable members-ng.iracing.com integration</span>
+            </label>
+          </div>
+          <div class="field"><label>Cache TTL (hours)</label>
+            <div class="rc-slider-wrap"><input type="range" class="rc-slider" id="pu-ir-ttl" min="1" max="168" step="1" value="24"><div class="rc-slider-labels"><span>1h</span><span class="rc-slider-value" id="pu-ir-ttl-val">24</span><span>168h</span></div></div>
+          </div>
+          <p style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.5">
+            Pulls driver career stats, recent form, world records, and track/car
+            assets. Credentials live in <code>python/race_secrets.json</code> or
+            the <code>IRACING_EMAIL</code> / <code>IRACING_PASSWORD</code> env
+            vars — never in this UI. Status: <span id="pu-ir-status">checking…</span>
+          </p>
+          <div class="mt" style="display:flex;gap:8px">
+            <button class="btn btn-sm" type="button" onclick="testIRacing()">Test Connection</button>
+            <button class="btn btn-sm" type="button" onclick="resetIRacingLockout()">Reset Lockout</button>
+          </div>
+        </div>
+      </div>
+      <div class="mt"><button class="btn btn-primary" onclick="savePowerUnit()">Save Power Unit</button></div>
+    </section>
+
+    <!-- ====== PROMPTS EDITOR ====== -->
+    <section id="prompts" class="tab-section">
+      <div class="page-header">
+        <div><h2>Commentary Prompts</h2><div class="subtitle">Edit the prompt templates that drive AI commentary for each trigger</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('prompts')">Set Background</button>
+      </div>
+      <div class="prompt-layout">
+        <div class="prompt-type-list" id="pr-type-list"></div>
+        <div>
+          <div class="flex-between mb">
+            <h3 id="pr-active-type" style="margin:0;border:none;padding:0;color:var(--white);font-size:16px">Select a trigger type</h3>
+            <button class="btn btn-sm btn-primary" onclick="addPrompt()" style="display:none" id="pr-add-btn">+ New Template</button>
+          </div>
+          <div id="pr-templates">
+            <div class="empty-state"><div class="empty-text">Select a trigger type from the list</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== TELEMETRY / DATA VIEWER ====== -->
+    <section id="telemetry" class="tab-section">
+      <div class="page-header">
+        <div><h2>Telemetry Data</h2><div class="subtitle">Inspect live JSON exports and available data points</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('telemetry')">Set Background</button>
+      </div>
+      <div class="flex-between mb">
+        <div class="flex-row">
+          <label class="toggle"><input type="checkbox" id="td-auto-refresh"><span class="slider"></span></label>
+          <span style="font-size:13px;color:var(--text-dim)">Auto-refresh (2s)</span>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="export-list" id="td-file-list"></div>
+        </div>
+        <div>
+          <div class="card" id="td-viewer" style="min-height:400px">
+            <h3 id="td-viewer-title">JSON Viewer</h3>
+            <div id="td-viewer-content" class="json-tree">
+              <div class="empty-state"><div class="empty-text">Select a data file to view its contents</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== DATABASE EXPLORER ====== -->
+    <section id="database" class="tab-section">
+      <div class="page-header">
+        <div><h2>Database Explorer</h2><div class="subtitle">Browse and edit the SQLite race history database</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('database')">Set Background</button>
+      </div>
+      <div class="db-toolbar">
+        <select id="db-table-select" onchange="dbLoadTable()">
+          <option value="">Select a table...</option>
+        </select>
+        <button class="btn btn-sm btn-primary" onclick="dbAddRow()" id="db-add-btn" style="display:none">+ Add Row</button>
+        <span class="db-row-count" id="db-row-count"></span>
+      </div>
+      <div id="db-grid">
+        <div class="empty-state"><div class="empty-text">Select a table to browse its contents</div></div>
+      </div>
+      <div class="db-pagination" id="db-pagination" style="display:none">
+        <button class="btn btn-sm" onclick="dbPrevPage()">&larr; Prev</button>
+        <span id="db-page-info">Page 1</span>
+        <button class="btn btn-sm" onclick="dbNextPage()">Next &rarr;</button>
+      </div>
+
+      <div class="card mt">
+        <h3>SQL Query</h3>
+        <textarea class="sql-box" id="db-sql" placeholder="SELECT * FROM races ORDER BY race_id DESC LIMIT 10"></textarea>
+        <div class="mt flex-row">
+          <button class="btn btn-primary btn-sm" onclick="dbRunQuery()">Run Query</button>
+          <span style="font-size:11px;color:var(--text-dim)">Read-only SELECT queries only</span>
+        </div>
+        <div id="db-query-result" class="mt"></div>
+      </div>
+    </section>
+
+    <!-- ====== MEDIA GALLERY ====== -->
+    <section id="media" class="tab-section">
+      <div class="page-header">
+        <div><h2>Media Gallery</h2><div class="subtitle">Manage driver photos, commentator portraits, and backgrounds</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('media')">Set Background</button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="mg-toolbar">
+        <div class="flex-row">
+          <select id="mg-folder-select" onchange="mgFilterFolder()">
+            <option value="">All Folders</option>
+          </select>
+          <select id="mg-category-select" onchange="mgFilterCategory()">
+            <option value="">All Categories</option>
+          </select>
+          <input type="text" id="mg-search" placeholder="Search files..." oninput="mgSearch()" style="width:200px">
+          <button class="btn btn-sm btn-primary" onclick="mgUpload()">Upload</button>
+          <span class="mg-count" id="mg-count"></span>
+        </div>
+      </div>
+
+      <!-- View toggle -->
+      <div class="mg-view-bar">
+        <button class="mg-view-btn active" id="mg-view-grid" onclick="mgSetView('grid')" title="Grid view">&#9638;</button>
+        <button class="mg-view-btn" id="mg-view-list" onclick="mgSetView('list')" title="List view">&#9776;</button>
+        <div style="margin-left:auto; font-size:12px; color:var(--text-dim)" id="mg-folder-path">All files</div>
+      </div>
+
+      <!-- Gallery content -->
+      <div class="mg-gallery mg-grid" id="mg-gallery">
+        <div class="empty-state"><div class="empty-text">Loading media files...</div></div>
+      </div>
+
+      <!-- Preview panel (slides in) -->
+      <div class="mg-preview hidden" id="mg-preview">
+        <div class="mg-preview-header">
+          <h3 id="mg-preview-title">Preview</h3>
+          <button class="btn btn-sm" onclick="mgClosePreview()">Close</button>
+        </div>
+        <div class="mg-preview-body" id="mg-preview-body"></div>
+        <div class="mg-preview-meta" id="mg-preview-meta"></div>
+        <div class="mg-preview-actions" id="mg-preview-actions"></div>
+      </div>
+    </section>
+
+    <!-- ====== RACE ARCHIVES ====== -->
+    <section id="race-archives" class="tab-section">
+      <div class="page-header">
+        <div><h2>Race Archives</h2><div class="subtitle">Review past races, commentary highlights, and driver career stats</div></div>
+        <button class="btn btn-sm btn-bg" onclick="openSetBackground('race-archives')">Set Background</button>
+      </div>
+
+      <!-- iRacing Eventresult Importer -->
+      <div class="card" id="ra-import-card">
+        <h3>Import iRacing Results</h3>
+        <div class="subtitle" style="margin-bottom:12px">
+          Drop an <code>eventresult-&lt;subsession&gt;.json</code> from iRacing here.
+          If a saved race has the same subsession, official iRating, license, incident, and average-lap data are merged in;
+          engine-only fields (DOTD scores, commentary, lap samples, race report) are preserved.
+        </div>
+        <div class="flex-row" style="gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="file" id="ra-import-file" accept=".json,application/json"
+                 style="flex:0 0 auto;color:var(--text-dim);font-size:13px" onchange="raImportFileChanged()">
+          <span id="ra-import-filename" style="color:var(--text-dim);font-size:12px;flex:1 1 auto;min-width:200px"></span>
+          <label style="display:inline-flex;align-items:center;gap:6px;color:var(--text-dim);font-size:12px;user-select:none">
+            <input type="checkbox" id="ra-import-force-new"> Force new race (skip auto-merge)
+          </label>
+          <button class="btn btn-primary" id="ra-import-btn" onclick="raImportEventresult()" disabled>Import</button>
+        </div>
+        <div id="ra-import-status" class="ra-import-status" style="display:none;margin-top:12px"></div>
+      </div>
+
+      <!-- Race List -->
+      <div class="card" id="ra-list-card">
+        <h3>Past Races</h3>
+        <table class="pw-table">
+          <thead><tr><th>Date</th><th>Track</th><th>Winner</th><th>DOTD</th><th>Your Finish</th><th>Cars</th><th>Duration</th><th></th></tr></thead>
+          <tbody id="ra-races"></tbody>
+        </table>
+        <div id="ra-empty" style="color:var(--text-dim); padding:12px;">No races recorded yet. Complete a race to see history here.</div>
+      </div>
+
+      <!-- Race Detail (hidden until clicked) -->
+      <div id="ra-detail" style="display:none">
+        <button class="btn btn-primary" onclick="raCloseDetail()"
+                style="display:inline-flex;align-items:center;gap:10px;font-weight:700;
+                       letter-spacing:1px;text-transform:uppercase;padding:10px 18px;
+                       margin-bottom:14px;box-shadow:0 2px 10px rgba(46,204,113,0.35)">
+          <span style="font-size:18px;line-height:1">&larr;</span>
+          Back to Race Archives
+        </button>
+        <div class="flex-row mb" style="gap:12px;align-items:center">
+          <h3 style="margin:0;border:none;padding:0;color:var(--white);font-size:16px" id="ra-detail-title"></h3>
+        </div>
+
+        <!-- Race summary stats -->
+        <div class="bc-stat-grid" id="ra-summary-stats"></div>
+
+        <!-- Tabs: Standings | Commentary | Incidents -->
+        <div class="ra-tabs">
+          <button class="ra-tab active" onclick="raTab(this,'standings')">Final Standings</button>
+          <button class="ra-tab" onclick="raTab(this,'commentary')">Commentary Replay</button>
+          <button class="ra-tab" onclick="raTab(this,'incidents')">Incidents</button>
+        </div>
+
+        <div class="ra-tab-content" id="ra-standings">
+          <table class="pw-table">
+            <thead><tr>
+              <th data-ra-sort="finish_position" aria-sort="ascending" onclick="raSortStandings('finish_position')">Pos <span class="ra-sort-mark">▲</span></th>
+              <th data-ra-sort="driver_name" onclick="raSortStandings('driver_name')">Driver <span class="ra-sort-mark"></span></th>
+              <th data-ra-sort="car_number" onclick="raSortStandings('car_number')"># <span class="ra-sort-mark"></span></th>
+              <th data-ra-sort="grid_position" onclick="raSortStandings('grid_position')">Grid <span class="ra-sort-mark"></span></th>
+              <th data-ra-sort="best_lap" onclick="raSortStandings('best_lap')">Best Lap <span class="ra-sort-mark"></span></th>
+              <th data-ra-sort="laps_led" onclick="raSortStandings('laps_led')">Led <span class="ra-sort-mark"></span></th>
+              <th data-ra-sort="dotd_percent" onclick="raSortStandings('dotd_percent')">DOTD <span class="ra-sort-mark"></span></th>
+              <th data-ra-sort="incidents" onclick="raSortStandings('incidents')">Inc <span class="ra-sort-mark"></span></th>
+            </tr></thead>
+            <tbody id="ra-standings-body"></tbody>
+          </table>
+        </div>
+
+        <div class="ra-tab-content" id="ra-commentary" style="display:none">
+          <div id="ra-commentary-feed"></div>
+        </div>
+
+        <div class="ra-tab-content" id="ra-incidents" style="display:none">
+          <div id="ra-incidents-feed"></div>
+        </div>
+      </div>
+
+      <!-- Driver Careers -->
+      <div class="card" id="ra-careers-card">
+        <h3>Focus Driver Career Replay Stats</h3>
+        <div id="ra-career-replay" class="ra-career-replay">
+          <div class="ra-career-empty">Loading Focus Driver stats...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CIRCUITS ─── -->
+    <section id="circuits" class="tab-section">
+      <div class="page-header">
+        <div><h2>Circuits</h2><div class="subtitle">Track centerline library for the Race Replay</div></div>
+        <button class="btn btn-sm" id="ck-new-btn">+ New Track</button>
+      </div>
+
+      <div class="card" id="ck-unmapped-card">
+        <h3>Unmapped Tracks</h3>
+        <div class="subtitle" style="margin-bottom:10px">Races in your history with no track map yet. Click <strong>Add</strong> to create one.</div>
+        <table class="pw-table">
+          <thead><tr><th>Track Name</th><th>Races</th><th>Last Seen</th><th></th></tr></thead>
+          <tbody id="ck-unmapped-body"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Track Library</h3>
+        <table class="pw-table">
+          <thead><tr><th>Display Name</th><th>Slug</th><th>iRacing Aliases</th><th></th></tr></thead>
+          <tbody id="ck-library-body"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="card" id="ck-editor-card" style="display:none">
+        <h3 id="ck-editor-title">Edit Track</h3>
+        <div class="ck-grid">
+          <div class="field">
+            <label>Display Name</label>
+            <input type="text" id="ck-display-name" placeholder="Watkins Glen">
+          </div>
+          <div class="field">
+            <label>Slug</label>
+            <input type="text" id="ck-slug" placeholder="auto from display name">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>iRacing Aliases (one per line — full track_name strings as iRacing reports them)</label>
+            <textarea id="ck-aliases" rows="3" placeholder="Watkins Glen International - Boot&#10;Watkins Glen International"></textarea>
+          </div>
+          <div class="field">
+            <label>SVG viewBox</label>
+            <input type="text" id="ck-viewbox" value="0 0 1260 720">
+          </div>
+          <div class="field">
+            <label>S/F Offset (0–1)</label>
+            <input type="number" id="ck-sf" step="0.01" min="0" max="1" value="0">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Centerline Path (single closed SVG <code>d</code> string, fitted to the viewBox above)</label>
+            <textarea id="ck-path" rows="6" placeholder="M 100,100 L 200,150 ... Z" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px"></textarea>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Background Image</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="ck-background" placeholder="/api/media/file?path=... or full image URL" style="flex:1">
+              <button type="button" class="btn btn-sm" id="ck-pick-bg-btn">Pick from Media…</button>
+            </div>
+            <div id="ck-bg-preview" style="margin-top:8px;display:none">
+              <img id="ck-bg-preview-img" alt="Background preview"
+                   style="max-height:120px;max-width:100%;border:1px solid var(--border);border-radius:4px;background:#111">
+            </div>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Notes</label>
+            <input type="text" id="ck-notes" placeholder="Imported from iRacing PDF, smoothed in Inkscape">
+          </div>
+        </div>
+
+        <div class="ck-preview-wrap">
+          <div class="ck-preview-label">Preview</div>
+          <svg id="ck-preview" viewBox="0 0 1260 720" preserveAspectRatio="xMidYMid meet">
+            <path id="ck-preview-glow" fill="none" stroke="#5a4a20" stroke-width="28" opacity="0.25" stroke-linecap="round" stroke-linejoin="round" d=""/>
+            <path id="ck-preview-surface" fill="none" stroke="#8a7a40" stroke-width="14" opacity="0.55" stroke-linecap="round" stroke-linejoin="round" d=""/>
+            <path id="ck-preview-stripe" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.25" stroke-dasharray="12 8" stroke-linecap="round" d=""/>
+          </svg>
+        </div>
+
+        <div class="ck-actions">
+          <button class="btn" id="ck-save-btn">Save</button>
+          <button class="btn" id="ck-cancel-btn">Cancel</button>
+          <button class="btn" id="ck-fetch-iracing-btn" type="button">Fetch from iRacing</button>
+          <button class="btn" id="ck-delete-btn" style="margin-left:auto;color:#ff5252">Delete</button>
+        </div>
+
+        <div id="ck-iracing-card" class="card" style="display:none;margin-top:14px">
+          <h3>iRacing Marketing Content <span id="ck-ir-id" style="color:var(--text-dim);font-size:12px;font-weight:normal"></span></h3>
+          <div id="ck-ir-images" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px"></div>
+          <div class="field"><label>Description</label>
+            <div id="ck-ir-detail" style="font-size:12px;color:var(--text);max-height:160px;overflow:auto;white-space:pre-wrap"></div>
+          </div>
+          <div class="field"><label>Tech Specs</label>
+            <div id="ck-ir-techspecs" style="font-size:12px;color:var(--text-dim);max-height:120px;overflow:auto;white-space:pre-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== GARAGE (cars) ====== -->
+    <section id="garage" class="tab-section">
+      <div class="page-header">
+        <div><h2>Garage</h2><div class="subtitle">Car library — marketing assets pulled from the iRacing /data API</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" id="cg-sync-btn">Sync from iRacing</button>
+          <button class="btn btn-sm" id="cg-new-btn">+ New Car</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Car Library</h3>
+        <table class="pw-table">
+          <thead><tr><th></th><th>Display Name</th><th>Slug</th><th>iRacing ID</th><th>iRacing Aliases</th><th></th></tr></thead>
+          <tbody id="cg-library-body"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="card" id="cg-editor-card" style="display:none">
+        <h3 id="cg-editor-title">Edit Car</h3>
+        <div class="ck-grid">
+          <div class="field">
+            <label>Display Name</label>
+            <input type="text" id="cg-display-name" placeholder="Ferrari 296 GT3">
+          </div>
+          <div class="field">
+            <label>Slug</label>
+            <input type="text" id="cg-slug" placeholder="auto from display name">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>iRacing Aliases (one per line — full car_name strings as iRacing reports them)</label>
+            <textarea id="cg-aliases" rows="3" placeholder="Ferrari 296 GT3"></textarea>
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Notes</label>
+            <input type="text" id="cg-notes" placeholder="Anything you want to remember about this car">
+          </div>
+        </div>
+
+        <div class="ck-actions">
+          <button class="btn" id="cg-save-btn">Save</button>
+          <button class="btn" id="cg-cancel-btn">Cancel</button>
+          <button class="btn" id="cg-delete-btn" style="margin-left:auto;color:#ff5252">Delete</button>
+        </div>
+
+        <div id="cg-iracing-card" class="card" style="display:none;margin-top:14px">
+          <h3>iRacing Marketing Content <span id="cg-ir-id" style="color:var(--text-dim);font-size:12px;font-weight:normal"></span></h3>
+          <div id="cg-ir-images" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px"></div>
+          <div class="field"><label>Description</label>
+            <div id="cg-ir-detail" style="font-size:12px;color:var(--text);max-height:160px;overflow:auto;white-space:pre-wrap"></div>
+          </div>
+          <div class="field"><label>Tech Specs</label>
+            <div id="cg-ir-techspecs" style="font-size:12px;color:var(--text-dim);max-height:120px;overflow:auto;white-space:pre-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal overlay (reusable) -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="/pitwall/static/pitwall.js"></script>
+<script src="/pitwall/static/pitwall-broadcast.js"></script>
+<script src="/pitwall/static/pitwall-db.js"></script>
+<script src="/pitwall/static/pitwall-prompts.js"></script>
+<script src="/pitwall/static/pitwall-data.js"></script>
+<script src="/pitwall/static/pitwall-media.js"></script>
+<script src="/pitwall/static/pitwall-tracks.js"></script>
+<script src="/pitwall/static/pitwall-cars.js"></script>
+</body>
+</html>

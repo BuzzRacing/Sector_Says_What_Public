@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sector Says What — Live Broadcast HUD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Titillium+Web:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="legacy_dashboard.css">
+</head>
+<body>
+
+<!-- FLAG BACKGROUND GLOW -->
+<div id="flag-glow" class="flag-glow"></div>
+
+<!-- ROTATING BACKGROUND -->
+<div class="race-bg" id="race-bg">
+  <div class="bg-layer bg-a" id="bg-a"></div>
+  <div class="bg-layer bg-b" id="bg-b"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MASTHEAD
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="masthead">
+  <div class="masthead-brand">
+    <span class="brand-text">Sector Says What</span>
+  </div>
+  <div class="masthead-session">
+    <div class="session-block">
+      <span class="session-label">Circuit</span>
+      <span class="session-value highlight" id="mh-track">—</span>
+    </div>
+  </div>
+  <div class="masthead-weather" id="mh-weather">
+    <div class="weather-chip"><div class="weather-val" id="mh-air">—</div><div class="weather-lbl">Air</div></div>
+    <div class="weather-chip"><div class="weather-val" id="mh-trk">—</div><div class="weather-lbl">Track</div></div>
+    <div class="weather-chip"><div class="weather-val" id="mh-hum">—</div><div class="weather-lbl">Humid</div></div>
+  </div>
+  <div class="masthead-settings" id="settings-btn">
+    <svg class="settings-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     THREE-COLUMN LAYOUT
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="hud-layout">
+
+  <!-- LEFT COLUMN: Tower + DOTD -->
+  <div class="col-left">
+    <!-- TIMING TOWER -->
+    <div class="timing-tower" id="timing-tower">
+      <div class="tower-lap-header">
+        <span class="tower-lap-label">Lap</span>
+        <span class="tower-lap-nums" id="tower-lap">— <span class="lap-dim">/ —</span></span>
+      </div>
+      <div id="tower-body"></div>
+    </div>
+
+    <!-- DRIVER OF THE DAY -->
+    <div class="dotd-section" id="dotd-section">
+      <div class="dotd-hero" id="dotd-hero" style="display:none;"></div>
+      <div class="dotd-runner-row" id="dotd-runners"></div>
+    </div>
+  </div>
+
+  <!-- CENTER COLUMN: Commentary Transcript -->
+  <div class="col-center">
+    <div class="commentary-transcript">
+      <div class="commentary-active" id="active-commentary" style="display:none;"></div>
+      <div class="commentary-history" id="commentary-history"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Contextual Cards -->
+  <div class="col-right" id="right-col">
+    <div id="flag-card" style="display:none;"></div>
+    <div id="battle-card" style="display:none;"></div>
+    <div id="pit-card" style="display:none;"></div>
+    <div id="fastest-lap-card" style="display:none;"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     BOTTOM TICKER
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="bottom-ticker">
+  <span class="ticker-brand">Sector Says What</span>
+  <div class="ticker-sep"></div>
+  <div class="ticker-scroll">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SETTINGS OVERLAY
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="settings-overlay" id="settings-overlay">
+  <div class="settings-panel">
+    <div class="settings-title">
+      HUD Settings
+      <button class="settings-close" id="settings-close">&times;</button>
+    </div>
+    <div class="settings-note">
+      Most configuration lives in the <strong>Pit Wall Dashboard</strong> and syncs automatically.<br>
+      These are quick-access controls for the broadcast window.
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-label">Focus Driver</div>
+      <div class="settings-row">
+        <span class="settings-row-label">Owner Driver</span>
+        <select class="settings-select" id="focus-driver-select"></select>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-label">Audio</div>
+      <div class="settings-row">
+        <span class="settings-row-label">Audio Output</span>
+        <select class="settings-select" id="audio-device"></select>
+      </div>
+    </div>
+
+    <button class="settings-btn-save" id="settings-save">Save & Close</button>
+  </div>
+</div>
+
+<script src="legacy_dashboard.js"></script>
+</body>
+</html>

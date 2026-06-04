@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sector Says What — Race Replays</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Titillium+Web:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hud_v2.css">
+<style>
+  /* ── Replay list page ── */
+  body { overflow-y: auto; }
+  .race-bg { position: fixed; inset: 0; z-index: 0; }
+
+  .replist-wrap {
+    position: relative; z-index: 10;
+    max-width: 1400px; margin: 0 auto; padding: 32px 32px 80px;
+  }
+
+  .replist-header {
+    text-align: center; margin-bottom: 8px;
+  }
+  .replist-title {
+    font-family: 'Audiowide', sans-serif;
+    font-size: 56px; letter-spacing: 6px; text-transform: uppercase;
+    color: var(--ssw-gold); margin: 0;
+    text-shadow: 0 0 24px rgba(212, 175, 55, 0.45);
+  }
+  .replist-sub {
+    font-family: 'Titillium Web', sans-serif; font-size: 16px;
+    color: var(--text-secondary, #9A9AB0); letter-spacing: 1.5px;
+    margin: 8px 0 24px;
+  }
+  .replist-meta-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 18px; padding: 0 4px;
+  }
+  .replist-count {
+    font-family: 'Titillium Web', sans-serif; font-size: 13px;
+    color: var(--text-secondary, #9A9AB0); letter-spacing: 1px; text-transform: uppercase;
+  }
+  .replist-actions { display: flex; gap: 10px; align-items: center; }
+  .replist-bg-btn {
+    font-family: 'Titillium Web', sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--text-secondary, #9A9AB0); cursor: pointer;
+    background: transparent; border: 1.5px solid rgba(255,255,255,0.15);
+    padding: 8px 16px; border-radius: 4px; letter-spacing: 1.5px; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .replist-bg-btn:hover { color: #fff; border-color: var(--ssw-gold); }
+
+  /* Background picker modal */
+  .bgpick-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; padding: 40px;
+  }
+  .bgpick-overlay.open { display: flex; }
+  .bgpick-modal {
+    background: rgba(8,12,20,0.97);
+    border: 1.5px solid var(--ssw-gold); border-radius: 8px;
+    padding: 24px; max-width: 1000px; width: 100%;
+    max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  }
+  .bgpick-modal h3 {
+    font-family: 'Audiowide', sans-serif; color: var(--ssw-gold);
+    font-size: 22px; letter-spacing: 2px; margin: 0 0 8px;
+  }
+  .bgpick-modal p {
+    font-family: 'Titillium Web', sans-serif; font-size: 12px;
+    color: var(--text-secondary, #9A9AB0); margin: 0 0 18px;
+  }
+  .bgpick-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; margin-bottom: 18px;
+  }
+  .bgpick-thumb {
+    position: relative; cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.1); border-radius: 4px;
+    overflow: hidden; aspect-ratio: 16/9; background: #000;
+    transition: all 0.2s;
+  }
+  .bgpick-thumb:hover  { border-color: rgba(212,175,55,0.6); }
+  .bgpick-thumb.selected { border-color: var(--ssw-gold); box-shadow: 0 0 14px rgba(212,175,55,0.5); }
+  .bgpick-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .bgpick-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.75); padding: 4px 8px;
+    font-family: 'Titillium Web', sans-serif; font-size: 10px;
+    color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+  }
+  .bgpick-actions {
+    display: flex; gap: 10px; padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .bgpick-actions button {
+    font-family: 'Titillium Web', sans-serif; font-size: 12px; font-weight: 700;
+    padding: 9px 18px; border-radius: 4px; cursor: pointer;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    background: transparent; border: 1.5px solid rgba(255,255,255,0.15);
+    color: var(--text-secondary, #9A9AB0);
+  }
+  .bgpick-actions button.primary { border-color: var(--ssw-gold); color: var(--ssw-gold); }
+  .bgpick-actions button.primary:hover { background: rgba(212,175,55,0.12); }
+  .bgpick-actions button.danger  { color: #FF5252; border-color: rgba(255,82,82,0.4); }
+  .bgpick-actions .spacer { flex: 1; }
+
+  .replist-back {
+    font-family: 'Titillium Web', sans-serif; font-size: 12px; font-weight: 700;
+    color: var(--ssw-gold); text-decoration: none; letter-spacing: 1.5px; text-transform: uppercase;
+    border: 1.5px solid var(--ssw-gold); padding: 8px 16px; border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .replist-back:hover { background: rgba(212, 175, 55, 0.12); }
+
+  .replist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    gap: 22px;
+  }
+
+  /* ── Card: F1-Manager style. Two columns: left = info, right = winner photo ── */
+  .replist-card {
+    background: rgba(8, 12, 20, 0.88);
+    border: 1.5px solid rgba(212, 175, 55, 0.18);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative; overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 176px;
+    min-height: 252px;
+  }
+  .replist-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ssw-gold-glow), var(--ssw-gold), var(--ssw-gold-glow), transparent);
+    opacity: 0.7; z-index: 3;
+  }
+  .replist-card:hover {
+    border-color: var(--ssw-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(212, 175, 55, 0.18), 0 0 0 1px rgba(212, 175, 55, 0.3);
+  }
+
+  .rc-body { padding: 18px 20px 16px; display: flex; flex-direction: column; min-width: 0; }
+
+  /* Track header */
+  .rc-track {
+    font-family: 'Audiowide', sans-serif;
+    font-size: 22px; color: #fff; letter-spacing: 1px;
+    line-height: 1.15; margin-bottom: 4px;
+    text-overflow: ellipsis; overflow: hidden;
+  }
+  .rc-meta {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    font-family: 'Titillium Web', sans-serif; font-size: 11px;
+    color: var(--text-secondary, #9A9AB0); letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .rc-meta strong { color: #fff; font-weight: 700; }
+
+  /* Winner block — big, prominent */
+  .rc-winner-block {
+    margin-bottom: 12px;
+  }
+  .rc-row-label {
+    font-family: 'Titillium Web', sans-serif; font-size: 10px; font-weight: 700;
+    color: var(--text-secondary, #9A9AB0); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .rc-winner-name {
+    font-family: 'Audiowide', sans-serif;
+    font-size: 26px; color: var(--ssw-gold);
+    letter-spacing: 1px; line-height: 1.05;
+    text-shadow: 0 0 18px rgba(212, 175, 55, 0.35);
+    text-transform: uppercase;
+  }
+
+  /* Focus driver row */
+  .rc-focus-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 6px; padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .rc-focus-photo {
+    width: 42px; height: 42px; border-radius: 4px;
+    background-size: cover; background-position: center top;
+    background-color: #111;
+    border: 1.5px solid rgba(46, 204, 113, 0.4);
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.55);
+  }
+  .rc-focus-info { flex: 1; min-width: 0; }
+  .rc-focus-name {
+    font-family: 'Titillium Web', sans-serif; font-size: 14px; font-weight: 700;
+    color: #2ecc71; letter-spacing: 0.5px;
+    text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+    text-transform: uppercase;
+  }
+  .rc-focus-pos {
+    font-family: 'Titillium Web', sans-serif; font-size: 11px;
+    color: var(--text-secondary, #9A9AB0); letter-spacing: 0.5px;
+  }
+  .rc-focus-pos strong { color: #fff; font-weight: 700; }
+
+  .rc-focus-pill {
+    font-family: 'Audiowide', sans-serif; font-size: 17px;
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.12);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    padding: 5px 12px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .rc-focus-delta {
+    font-family: 'Titillium Web', sans-serif; font-size: 12px;
+    font-weight: 900; letter-spacing: 0.5px; flex-shrink: 0;
+  }
+  .rc-focus-delta.up   { color: #00E676; }
+  .rc-focus-delta.down { color: #FF5252; }
+  .rc-focus-delta.flat { color: var(--text-secondary, #9A9AB0); }
+
+  /* DOTD row */
+  .rc-dotd-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 8px; padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .rc-dotd-photo {
+    width: 34px; height: 34px; border-radius: 4px;
+    background-size: cover; background-position: center top;
+    background-color: #111;
+    border: 1.5px solid rgba(212, 175, 55, 0.45);
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.55);
+  }
+  .rc-dotd-info { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+  .rc-dotd-tag {
+    font-family: 'Titillium Web', sans-serif; font-size: 10px; font-weight: 700;
+    color: var(--ssw-gold); letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .rc-dotd-name {
+    font-family: 'Titillium Web', sans-serif; font-size: 13px; font-weight: 700;
+    color: #fff;
+    text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+    flex: 1; min-width: 0;
+  }
+  .rc-dotd-pct {
+    font-family: 'Audiowide', sans-serif; font-size: 14px;
+    color: var(--ssw-gold); flex-shrink: 0;
+  }
+
+  /* Stats footer */
+  .rc-stats {
+    display: flex; gap: 14px;
+    font-family: 'Titillium Web', sans-serif; font-size: 11px;
+    color: var(--text-secondary, #9A9AB0); text-transform: uppercase; letter-spacing: 1px;
+    padding-top: 10px; margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .rc-stats strong { color: #fff; font-weight: 900; margin-right: 3px; }
+
+  /* Right column — square winner image tile */
+  .rc-photo-col {
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(circle at 60% 20%, rgba(212,175,55,0.18), transparent 44%),
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0)),
+      #0a0d14;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 18px 16px;
+    border-left: 1px solid rgba(255,255,255,0.06);
+  }
+  .rc-photo-col::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(8,12,20,0.92) 0%, rgba(8,12,20,0.12) 34%, rgba(8,12,20,0) 100%);
+    pointer-events: none;
+  }
+  .rc-photo-label {
+    position: relative; z-index: 2;
+    font-family: 'Audiowide', sans-serif; font-size: 9px;
+    color: var(--ssw-gold); letter-spacing: 2px; text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    margin-bottom: 10px;
+  }
+  .rc-photo-frame {
+    position: relative; z-index: 2;
+    width: min(132px, 100%);
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    background-size: cover; background-position: center top;
+    background-color: rgba(0,0,0,0.45);
+    border: 2px solid rgba(212,175,55,0.52);
+    box-shadow:
+      0 14px 26px rgba(0,0,0,0.45),
+      inset 0 0 0 1px rgba(0,0,0,0.75);
+  }
+  .rc-photo-frame.no-photo {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Audiowide', sans-serif; font-size: 34px;
+    color: rgba(212,175,55,0.65);
+    background: linear-gradient(135deg, rgba(212,175,55,0.13), rgba(8,12,20,0.75));
+  }
+
+  .replist-empty, .replist-loading {
+    grid-column: 1 / -1; text-align: center; padding: 80px 20px;
+    font-family: 'Titillium Web', sans-serif; font-size: 16px;
+    color: var(--text-secondary, #9A9AB0);
+  }
+</style>
+</head>
+<body>
+
+<div class="race-bg">
+  <div class="bg-layer bg-a"></div>
+  <div class="bg-layer bg-b"></div>
+</div>
+
+<div class="replist-wrap">
+  <div class="replist-header">
+    <h1 class="replist-title">Race Replays</h1>
+    <div class="replist-sub">Relive the moment. Reconstructed in motion.</div>
+  </div>
+
+  <div class="replist-meta-row">
+    <div class="replist-count" id="rl-count">Loading races…</div>
+    <div class="replist-actions">
+      <button class="replist-bg-btn" id="rl-bg-btn">Set Background</button>
+      <a href="/pitwall" class="replist-back">← Pit Wall</a>
+    </div>
+  </div>
+
+  <div class="replist-grid" id="rl-grid">
+    <div class="replist-loading">Loading races…</div>
+  </div>
+</div>
+
+<!-- Background picker modal -->
+<div class="bgpick-overlay" id="bgpick-overlay">
+  <div class="bgpick-modal">
+    <h3>Set Background — Race Replays</h3>
+    <p>Pick an image from your Media Gallery. Upload new images in the Pit Wall Media tab first.</p>
+    <div class="bgpick-grid" id="bgpick-grid"></div>
+    <div class="bgpick-actions">
+      <button class="danger" id="bgpick-clear">Clear</button>
+      <div class="spacer"></div>
+      <button id="bgpick-cancel">Cancel</button>
+      <button class="primary" id="bgpick-save">Set Background</button>
+    </div>
+  </div>
+</div>
+
+<script src="/replay_list.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sector Says What | AI Broadcast Commentary for iRacing</title>
+<meta name="description" content="Sector Says What turns iRacing telemetry into live AI commentary, broadcast HUD overlays, race replays, Driver of the Day scoring, and Pit Wall controls.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Titillium+Web:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/product.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/product" aria-label="Sector Says What product page">
+    <img src="/backgrounds/sector_says_what_logo_alternate.png" alt="">
+    <span>Sector Says <b>What</b></span>
+  </a>
+  <nav aria-label="Product sections">
+    <a href="#broadcast">Broadcast</a>
+    <a href="#replay">Replay</a>
+    <a href="#pitwall">Pit Wall</a>
+    <a href="#proof">Proof</a>
+  </nav>
+  <a class="nav-cta" href="/">Open HUD</a>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-shade" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="eyebrow">AI broadcast booth for iRacing</p>
+      <h1>Sector Says What</h1>
+      <p class="hero-copy">
+        Live commentary, race graphics, replay storytelling, and a full Pit Wall control room for sim races that deserve more than a quiet timing screen.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="/replays">Watch Race Replays</a>
+        <a class="btn" href="/pitwall">Open Pit Wall</a>
+      </div>
+      <div class="hero-stats" id="hero-stats" aria-label="Local race archive stats">
+        <div><strong>--</strong><span>Archived races</span></div>
+        <div><strong>--</strong><span>Commentary lines</span></div>
+        <div><strong>--</strong><span>Lap samples</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="intro-band" id="broadcast">
+    <div class="section-head">
+      <p class="eyebrow">Broadcast ready</p>
+      <h2>Turns telemetry into a live show</h2>
+      <p>
+        SSW reads iRacing shared memory, freezes each tick once, detects meaningful race events, writes the archive, and speaks the call through the configured audio device.
+      </p>
+    </div>
+    <div class="feature-strip">
+      <article>
+        <span>01</span>
+        <h3>Live HUD</h3>
+        <p>Timing tower, flag atmosphere, battle cards, DOTD standings, fastest lap, leader cards, and a synced commentary feed.</p>
+      </article>
+      <article>
+        <span>02</span>
+        <h3>Seven voices</h3>
+        <p>Studio, pit lane, paddock, fan zone, and technical roles rotate by trigger type so the booth sounds like a broadcast team.</p>
+      </article>
+      <article>
+        <span>03</span>
+        <h3>Safety gates</h3>
+        <p>Race-state gates, grace periods, edge detection, confirmation windows, and anti-fabrication prompts keep calls factual.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="preview-section">
+    <div class="section-head split">
+      <div>
+        <p class="eyebrow">Live screen captures</p>
+        <h2>Public surfaces, rendered from the app</h2>
+      </div>
+      <button class="btn small" id="refresh-previews" type="button">Refresh previews</button>
+    </div>
+    <div class="preview-grid public-previews" id="public-previews">
+      <article class="preview-card wide" data-preview="hud">
+        <div class="preview-top"><span>Race HUD</span><a href="/" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame"><iframe title="Live Race HUD preview" data-src="/"></iframe></div>
+        <p>The live overlay: masthead, timing tower, DOTD, race cards, flag glow, ticker, and commentary stream.</p>
+      </article>
+      <article class="preview-card" data-preview="replays">
+        <div class="preview-top"><span>Replay Library</span><a href="/replays" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame"><iframe title="Race replay library preview" data-src="/replays"></iframe></div>
+        <p>F1-manager style archive cards with winner, Focus Driver finish, DOTD vote, car count, and replay links.</p>
+      </article>
+      <article class="preview-card" data-preview="latest-replay">
+        <div class="preview-top"><span id="latest-label">Latest Replay</span><a id="latest-link" href="/replay" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame"><iframe title="Latest replay preview" id="latest-frame"></iframe></div>
+        <p id="latest-copy">Animated circuit map, timing tower, scrub controls, callouts, finish card, results, and race report.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="booth-section">
+    <div class="section-head">
+      <p class="eyebrow">The booth</p>
+      <h2>Seven commentators with real broadcast roles</h2>
+      <p>Each character carries a different job, location, and voice style. They are managed from Pit Wall and attached to trigger categories.</p>
+    </div>
+    <div class="caster-row">
+      <article><img src="/commentators/murray_default.png" alt="Murray"><b>Murray</b><span>Lead commentator</span></article>
+      <article><img src="/commentators/sienna_studio_pose_02.png" alt="Sienna"><b>Sienna</b><span>Studio anchor</span></article>
+      <article><img src="/commentators/nigel_studio_pose_07.png" alt="Nigel"><b>Nigel</b><span>Technical analyst</span></article>
+      <article><img src="/commentators/jules_fanzone_pose_01.png" alt="Jules"><b>Jules</b><span>Fan zone</span></article>
+      <article><img src="/commentators/marcus_default.png" alt="Marcus"><b>Marcus</b><span>Paddock insider</span></article>
+      <article><img src="/commentators/clara_default.png" alt="Clara"><b>Clara</b><span>Feature reporter</span></article>
+      <article><img src="/commentators/theo_pitlane_pose_04.png" alt="Theo"><b>Theo</b><span>Pit lane</span></article>
+    </div>
+  </section>
+
+  <section class="replay-section" id="replay">
+    <div class="section-head split">
+      <div>
+        <p class="eyebrow">Replay system</p>
+        <h2>Every race becomes a rewatchable broadcast</h2>
+      </div>
+      <a class="btn small" id="deep-replay-link" href="/replays">Browse all replays</a>
+    </div>
+    <div class="replay-layout">
+      <article class="spotlight">
+        <div class="spotlight-media"><img src="/backgrounds/grid_starting.png" alt="Formula cars forming on the grid"></div>
+        <div class="spotlight-body">
+          <p class="eyebrow">Archive intelligence</p>
+          <h3>Lap samples, callouts, results, and race reports stay connected.</h3>
+          <p>
+            Engine-tracked races use captured start-finish crossings for replay timing. Imported races are clearly handled as imports, including honest DOTD display when scores are unavailable.
+          </p>
+        </div>
+      </article>
+      <div class="logic-list">
+        <article><b>Track animation</b><span>Dots move around mapped circuit centerlines with Focus Driver highlighting.</span></article>
+        <article><b>Synced callouts</b><span>Replay popups follow the relevant car when an archived event has a target.</span></article>
+        <article><b>Finish takeover</b><span>Podium, DOTD vote share, watch-again, classification, and report controls appear at race end.</span></article>
+        <article><b>Career replay</b><span>Focus Driver trend charts, best tracks, DOTD peaks, incidents, and replay-linked moments live in Race Archives.</span></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="pitwall-section" id="pitwall">
+    <div class="section-head split">
+      <div>
+        <p class="eyebrow">Pit Wall</p>
+        <h2>Control room, not config sprawl</h2>
+        <p>Local admin pages manage broadcast status, commentator profiles, prompts, DOTD scoring, detection thresholds, media, circuits, garage assets, and race history.</p>
+      </div>
+      <a class="btn small" href="/pitwall">Open Pit Wall</a>
+    </div>
+    <div class="admin-note" id="admin-note">
+      Pit Wall screen captures render on localhost or with a valid admin token. Remote visitors see feature summaries instead of protected admin controls.
+    </div>
+    <div class="preview-grid admin-previews" id="admin-previews">
+      <article class="preview-card" data-admin-preview="/pitwall#broadcast">
+        <div class="preview-top"><span>Broadcast Control</span><a href="/pitwall#broadcast" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame protected"><iframe title="Pit Wall broadcast control preview"></iframe></div>
+        <p>Start/stop state, race progress, commentary rate, live feed, and quick HUD launch.</p>
+      </article>
+      <article class="preview-card" data-admin-preview="/pitwall#race-archives">
+        <div class="preview-top"><span>Race Archives</span><a href="/pitwall#race-archives" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame protected"><iframe title="Race Archives preview"></iframe></div>
+        <p>Race details, sortable standings, commentary replay, incidents, import merge, and Focus Driver career replay.</p>
+      </article>
+      <article class="preview-card" data-admin-preview="/pitwall#media">
+        <div class="preview-top"><span>Media Gallery</span><a href="/pitwall#media" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame protected"><iframe title="Media Gallery preview"></iframe></div>
+        <p>Driver photos, commentator portraits, backgrounds, tagging, page backgrounds, and HUD media.</p>
+      </article>
+      <article class="preview-card" data-admin-preview="/pitwall#circuits">
+        <div class="preview-top"><span>Circuits</span><a href="/pitwall#circuits" target="_blank" rel="noopener">Open</a></div>
+        <div class="preview-frame protected"><iframe title="Circuit editor preview"></iframe></div>
+        <p>Track aliases, replay centerlines, start-finish markers, background images, and unmapped-track workflow.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="proof-section" id="proof">
+    <div class="section-head">
+      <p class="eyebrow">Special logic</p>
+      <h2>Designed around real broadcast failures</h2>
+      <p>SSW is full of unglamorous guardrails because live racing data lies at exactly the wrong time. That is rude, but educational.</p>
+    </div>
+    <div class="proof-grid">
+      <article><b>Single freeze per tick</b><span>One telemetry snapshot feeds the full engine tick so comparisons do not mix moments in time.</span></article>
+      <article><b>Qualifying grid authority</b><span>Starting grid comes from QualifyResultsInfo first, avoiding green-flag CarIdxPosition chaos.</span></article>
+      <article><b>Race-state gates</b><span>Pre-green, white-flag, and post-checkered gates keep rolling commentary out of the wrong phase.</span></article>
+      <article><b>Position confirmation</b><span>Overtakes use lap plus lap-distance sorting with confirmation windows and pit-road suppression.</span></article>
+      <article><b>DOTD as vote share</b><span>Driver of the Day is presented as percent of the positive vote, not a raw internal score.</span></article>
+      <article><b>Anti-fabrication stack</b><span>System rules, prompt templates, and sanitizers block invented tyres, strategy, radio, emotions, and blame.</span></article>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div>
+    <b>Sector Says What</b>
+    <span>Python, Flask, iRacing SDK, SQLite, FMOD, OpenAI-compatible LLMs, Inworld TTS.</span>
+  </div>
+  <div class="footer-links">
+    <a href="/">HUD</a>
+    <a href="/replays">Replays</a>
+    <a href="/pitwall">Pit Wall</a>
+  </div>
+</footer>
+
+<script src="/product.js"></script>
+</body>
+</html>

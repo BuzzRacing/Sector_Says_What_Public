@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Track Editor | Sector Says What</title>
+<style>
+  :root {
+    --emerald: #00d68f;
+    --emerald-dim: #007a52;
+    --gold: #f5c542;
+    --bg: #0b0f0d;
+    --panel: #11181400;
+    --panel-solid: #0f1714;
+    --line: #1d2a25;
+    --text: #d8efe5;
+    --muted: #7d9b91;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, sans-serif; }
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 18px; background: #0d1411; border-bottom: 1px solid var(--line);
+  }
+  header h1 { margin: 0; font-size: 16px; color: var(--gold); letter-spacing: .08em; text-transform: uppercase; }
+  header .spacer { flex: 1; }
+  main { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 49px); }
+  aside {
+    border-right: 1px solid var(--line);
+    padding: 16px;
+    overflow-y: auto;
+    background: #0d1411;
+  }
+  aside h2 {
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--emerald); margin: 18px 0 6px; border-bottom: 1px solid var(--line); padding-bottom: 4px;
+  }
+  aside h2:first-child { margin-top: 0; }
+  label { display: block; font-size: 11px; color: var(--muted); margin: 8px 0 3px; text-transform: uppercase; letter-spacing: .06em; }
+  input[type=text], textarea, select {
+    width: 100%; background: #0a0f0d; border: 1px solid var(--line); color: var(--text);
+    padding: 6px 8px; border-radius: 4px; font: inherit;
+  }
+  textarea { resize: vertical; min-height: 50px; }
+  input[type=range] { width: 100%; }
+  button {
+    background: #142019; color: var(--text); border: 1px solid var(--line);
+    padding: 6px 10px; border-radius: 4px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: var(--emerald-dim); }
+  button.primary { background: var(--emerald-dim); border-color: var(--emerald); color: #fff; }
+  button.gold { background: #4a3a10; border-color: var(--gold); color: var(--gold); }
+  button.danger { border-color: #6b1d1d; color: #ff8a8a; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .row button { flex: 1; }
+  .stat { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 4px 0; }
+  .stat b { color: var(--text); font-weight: 600; }
+  #stage { position: relative; overflow: hidden; background: #050807; }
+  #stage svg { display: block; width: 100%; height: 100%; cursor: crosshair; }
+  #stage.mode-move svg { cursor: grab; }
+  #stage.mode-sf  svg { cursor: cell; }
+  #hint {
+    position: absolute; left: 12px; bottom: 10px; pointer-events: none;
+    color: var(--muted); font-size: 11px; background: rgba(0,0,0,.5); padding: 6px 10px; border-radius: 4px;
+    border: 1px solid var(--line);
+  }
+  .anchor { fill: var(--gold); stroke: #000; stroke-width: 1; cursor: grab; }
+  .anchor:hover { fill: #fff; }
+  .centerline { fill: none; stroke: var(--emerald); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+  .centerline.preview { stroke-dasharray: 4 4; opacity: .8; }
+  .sf { fill: var(--gold); stroke: #000; stroke-width: 1.5; }
+  .toast { position: fixed; bottom: 18px; right: 18px; background: var(--emerald-dim); color: #fff;
+    padding: 10px 16px; border-radius: 4px; border: 1px solid var(--emerald); opacity: 0; transition: opacity .25s;
+    pointer-events: none; }
+  .toast.show { opacity: 1; }
+  kbd { background: #1a2520; border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; font-size: 11px; }
+  .bg-swatches { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .bg-swatches button {
+    width: 28px; height: 28px; padding: 0; border-radius: 4px;
+    border: 2px solid var(--line); cursor: pointer; flex: 0 0 auto;
+  }
+  .bg-swatches button:hover { border-color: var(--emerald-dim); }
+  .bg-swatches button.active { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+  .bg-swatches input[type=color] {
+    width: 28px; height: 28px; padding: 0; border: 2px solid var(--line);
+    border-radius: 4px; background: transparent; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Track Map Editor</h1>
+  <div class="spacer"></div>
+  <a href="/pitwall" style="color: var(--muted); text-decoration: none;">← Pit Wall</a>
+</header>
+
+<main>
+  <aside>
+    <h2>Track</h2>
+    <label>Existing</label>
+    <select id="trackSelect"><option value="">— New track —</option></select>
+
+    <label>Display name</label>
+    <input id="displayName" type="text" placeholder="e.g. Miami International Autodrome" />
+
+    <label>iRacing names (one per line)</label>
+    <textarea id="irNames" placeholder="Miami International Autodrome&#10;Miami GP"></textarea>
+
+    <h2>Backdrop</h2>
+    <label>Image URL or paste/drop file</label>
+    <input id="bgUrl" type="text" placeholder="https://… or drop image on canvas" />
+    <input id="bgFile" type="file" accept="image/*" style="margin-top:4px" />
+    <label>Opacity <span id="opVal">40%</span></label>
+    <input id="bgOpacity" type="range" min="0" max="100" value="40" />
+    <label>Scale <span id="scVal">1.00×</span></label>
+    <input id="bgScale" type="range" min="0.1" max="3" step="0.01" value="1" />
+    <label>Offset X <span id="dxVal">0</span></label>
+    <input id="bgDx" type="range" min="-2000" max="2000" step="1" value="0" />
+    <label>Offset Y <span id="dyVal">0</span></label>
+    <input id="bgDy" type="range" min="-2000" max="2000" step="1" value="0" />
+    <div class="row" style="margin-top:6px">
+      <button id="bgClear">Clear</button>
+      <button id="bgToggle">Hide</button>
+    </div>
+    <label>Canvas background</label>
+    <div class="bg-swatches" id="stageBgSwatches">
+      <button type="button" data-color="#050807" style="background:#050807" title="Near black (default)"></button>
+      <button type="button" data-color="#1a1a1a" style="background:#1a1a1a" title="Dark gray"></button>
+      <button type="button" data-color="#4a4a4a" style="background:#4a4a4a" title="Mid gray"></button>
+      <button type="button" data-color="#9a9a9a" style="background:#9a9a9a" title="Light gray"></button>
+      <button type="button" data-color="#ffffff" style="background:#ffffff" title="White"></button>
+      <button type="button" data-color="#2a4a3a" style="background:#2a4a3a" title="Dark emerald"></button>
+      <button type="button" data-color="#1a2a4a" style="background:#1a2a4a" title="Navy"></button>
+      <button type="button" data-color="#4a2a1a" style="background:#4a2a1a" title="Warm brown"></button>
+      <input id="stageBgPicker" type="color" value="#050807" title="Custom color" />
+    </div>
+
+    <h2>Drawing</h2>
+    <div class="stat"><span>Anchors</span><b id="statCount">0</b></div>
+    <div class="stat"><span>Closed</span><b id="statClosed">no</b></div>
+    <div class="stat"><span>SF index</span><b id="statSf">—</b></div>
+    <div class="row">
+      <button id="undoBtn">Undo</button>
+      <button id="redoBtn">Redo</button>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <button id="closeBtn">Close loop (C)</button>
+      <button id="sfBtn">Set S/F</button>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <button id="clearBtn" class="danger">Clear all</button>
+    </div>
+
+    <h2>Save</h2>
+    <div class="row">
+      <button id="saveBtn" class="primary">Save track</button>
+    </div>
+    <div id="saveMsg" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+
+    <h2>Shortcuts</h2>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7">
+      <kbd>click</kbd> add point ·
+      <kbd>drag</kbd> move point ·
+      <kbd>right-click</kbd> delete<br/>
+      <kbd>alt+click</kbd> insert on segment ·
+      <kbd>C</kbd> close · <kbd>Z</kbd>/<kbd>Y</kbd> undo/redo
+    </div>
+  </aside>
+
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"
+         viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+      <image id="backdrop" href="" x="0" y="0" width="1600" height="900" opacity="0.4" style="display:none" />
+      <path id="centerlineFinal" class="centerline" d="" />
+      <path id="centerlinePreview" class="centerline preview" d="" />
+      <g id="sfLayer"></g>
+      <g id="anchorLayer"></g>
+    </svg>
+    <div id="hint">Click on the canvas to start tracing the racing line</div>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="/pitwall/track_editor.js"></script>
+<script>
+(function() {
+  // Canvas background color picker — each track image is different
+  // (white tracks, black tracks, satellite), so the operator needs
+  // to pick a stage background that actually contrasts with whatever
+  // they're tracing. Persist to localStorage so the preference holds
+  // across sessions.
+  const STORE_KEY = "ssw.trackEditor.stageBg";
+  const stage = document.getElementById("stage");
+  const swatchWrap = document.getElementById("stageBgSwatches");
+  const picker = document.getElementById("stageBgPicker");
+  if (!stage || !swatchWrap || !picker) return;
+
+  function applyBg(color) {
+    if (!color) return;
+    stage.style.background = color;
+    picker.value = color;
+    swatchWrap.querySelectorAll("button[data-color]").forEach(b => {
+      b.classList.toggle("active", (b.dataset.color || "").toLowerCase() === color.toLowerCase());
+    });
+    try { localStorage.setItem(STORE_KEY, color); } catch (_) {}
+  }
+
+  swatchWrap.querySelectorAll("button[data-color]").forEach(b => {
+    b.addEventListener("click", () => applyBg(b.dataset.color));
+  });
+  picker.addEventListener("input", () => applyBg(picker.value));
+
+  const saved = (() => { try { return localStorage.getItem(STORE_KEY); } catch (_) { return null; } })();
+  applyBg(saved || "#050807");
+})();
+</script>
+</body>
+</html>

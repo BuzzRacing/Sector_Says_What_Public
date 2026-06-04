@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Racing Replay — Standalone</title>
+<style>
+:root{
+  --bg0:#0a0d12; --bg1:#10141b; --bg2:#161b25; --bd0:#1f2630; --bd1:#262e3b;
+  --t1:#e6ecf5; --tm:#8a95a6; --ir:#ff9100; --ir2:rgba(255,145,0,.15); --teal:#26d4c8;
+  --ff-d:'Nunito',system-ui,sans-serif;
+  --ff-b:'Nunito',system-ui,sans-serif;
+  --ff-m:ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg0);color:var(--t1);font-family:var(--ff-b)}
+.page{max-width:1320px;margin:0 auto;padding:24px}
+.loader{display:flex;gap:12px;align-items:center;margin-bottom:18px;padding:14px;
+  background:var(--bg2);border:1.5px solid var(--bd1);border-radius:12px}
+.loader label{font-family:var(--ff-d);font-size:.72rem;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase}
+.loader input[type=file]{color:var(--t1);font-family:var(--ff-m);font-size:.82rem}
+.btn{background:transparent;border:1.5px solid var(--bd1);color:var(--t1);
+  padding:6px 14px;border-radius:8px;font-family:var(--ff-d);font-size:.78rem;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+.btn-sm{padding:5px 12px;font-size:.72rem}
+.grid-title{font-family:var(--ff-d);font-size:1rem;color:var(--tm);letter-spacing:3px;
+  text-transform:uppercase;margin:0 0 14px}
+.story-section{margin-bottom:32px}
+
+/* ── S5b: TRACK ANIMATION ── */
+.track-title-bar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;
+  padding-bottom:10px;border-bottom:2px solid;border-image:linear-gradient(90deg,transparent,var(--ir),transparent) 1}
+.track-title-name{font-family:var(--ff-d);font-size:1.6rem;color:#fff;letter-spacing:2px;text-transform:uppercase}
+.track-title-lap{font-family:var(--ff-d);font-size:1rem;color:var(--ir);letter-spacing:1px}
+.track-wrap{background:var(--bg2);border:1.5px solid var(--bd1);border-radius:18px;padding:20px;overflow:hidden;position:relative}
+.track-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--ir),transparent);opacity:.55}
+.track-map-area{position:relative;min-height:400px}
+.track-svg{width:100%;height:auto;display:block}
+
+/* ── TIMING TOWER ── */
+.timing-tower{position:absolute;top:12px;left:12px;width:260px;z-index:10;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.10);
+  border-radius:6px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.7)}
+.tt-header{padding:6px 12px;text-align:center;
+  background:linear-gradient(180deg,rgba(255,145,0,.12),transparent);border-bottom:1px solid rgba(255,255,255,.10)}
+.tt-header-label{font-family:var(--ff-d);font-size:.65rem;color:rgba(255,255,255,.5);letter-spacing:3px}
+.tt-header-lap{font-family:var(--ff-d);font-size:1.5rem;color:#fff;line-height:1.2;font-weight:700}
+.tt-header-lap span{color:rgba(255,255,255,.45);font-weight:400}
+.tt-col-labels{display:flex;align-items:center;padding:0 10px;height:20px;
+  border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.tt-col-labels span{font-family:var(--ff-d);font-size:.58rem;color:rgba(255,255,255,.35);letter-spacing:1.5px;text-transform:uppercase}
+.tt-col-labels span:last-child{margin-left:auto}
+.tt-body{position:relative}
+.tt-row{display:flex;align-items:center;gap:0;height:30px;padding:0 10px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s;position:absolute;left:0;right:0}
+.tt-row:nth-child(odd){background:rgba(255,255,255,.03)}
+.tt-row:nth-child(even){background:rgba(255,255,255,.06)}
+.tt-row.is-us{background:rgba(255,145,0,.15);border-left:3px solid var(--ir);padding-left:7px}
+.tt-pos{font-family:var(--ff-d);font-size:.88rem;color:rgba(255,255,255,.85);width:24px;text-align:right;flex-shrink:0;font-weight:700}
+.tt-row.is-us .tt-pos{color:var(--ir)}
+.tt-stripe{width:4px;height:18px;border-radius:2px;margin:0 7px;flex-shrink:0}
+.tt-name{font-family:var(--ff-b);font-size:.88rem;color:#fff;font-weight:700;flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.5px}
+.tt-row.is-us .tt-name{color:var(--ir)}
+.tt-interval{font-family:var(--ff-m);font-size:.82rem;color:rgba(255,255,255,.65);
+  text-align:right;min-width:72px;flex-shrink:0;font-weight:600}
+.tt-interval.leader{color:rgba(255,255,255,.65);font-weight:700}
+.tt-row.is-us .tt-interval{color:var(--ir)}
+.tt-interval.out{color:#ff5252}
+.tt-row.tt-out{opacity:.45}
+
+@media(max-width:768px){
+  .timing-tower{display:none}
+  .track-title-name{font-size:1.1rem}
+}
+
+.track-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06)}
+.speed-slider-wrap{display:flex;align-items:center;gap:10px;width:100%;margin-top:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}
+.speed-slider-wrap label{font-family:var(--ff-d);font-size:.68rem;color:var(--tm);letter-spacing:1.5px;white-space:nowrap}
+.speed-slider{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:3px;outline:none;
+  background:linear-gradient(90deg,var(--ir),rgba(255,255,255,.15));cursor:pointer}
+.speed-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--ir);border:2px solid #fff;cursor:pointer;box-shadow:0 0 8px rgba(255,145,0,.5)}
+.speed-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+  background:var(--ir);border:2px solid #fff;cursor:pointer;box-shadow:0 0 8px rgba(255,145,0,.5)}
+.speed-val{font-family:var(--ff-m);font-size:.82rem;color:var(--ir);min-width:42px;text-align:right}
+.track-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.track-legend-item{display:flex;align-items:center;gap:4px;font-family:var(--ff-m);font-size:.68rem;color:var(--tm)}
+.track-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.track-legend-item.is-us{color:var(--ir);font-weight:700}
+.track-legend-item.dnf{opacity:.4;text-decoration:line-through}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="loader">
+  <label>Load Race JSON</label>
+  <input type="file" id="json-file" accept="application/json"/>
+  <button class="btn btn-sm" id="load-sample">Load sample_data.json</button>
+</div>
+
+<div class="story-section" id="race-anim">
+  <div class="grid-title">RACE PROGRESSION</div>
+  <div class="track-wrap">
+    <div class="track-title-bar">
+      <div class="track-title-name" id="track-title-name">—</div>
+      <div class="track-title-lap" id="title-lap">Lap 0 / 0</div>
+    </div>
+    <div class="track-map-area">
+      <div class="timing-tower" id="timing-tower">
+        <div class="tt-header">
+          <div class="tt-header-label">LAP</div>
+          <div class="tt-header-lap" id="tt-lap-display">0 <span>/ 0</span></div>
+        </div>
+        <div class="tt-col-labels"><span></span><span>Interval</span></div>
+        <div class="tt-body" id="tt-body"></div>
+      </div>
+      <svg class="track-svg" viewBox="0 60 1260 660" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="track-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"/>
+            <feColorMatrix in="blur" type="matrix" values="0.3 0 0 0 0.3  0 0.3 0 0 0.35  0 0 0.4 0 0.5  0 0 0 0.8 0"/>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path id="track-glow-path" fill="none" stroke="#5a7090" stroke-width="28" opacity="0.2"
+              stroke-linecap="round" stroke-linejoin="round" d=""/>
+        <path id="track-surface" fill="none" stroke="#7a8da8" stroke-width="14" opacity="0.45"
+              stroke-linecap="round" stroke-linejoin="round" filter="url(#track-glow)" d=""/>
+        <path id="track-center-stripe" fill="none" stroke="#9ab0cc" stroke-width="1" opacity="0.15"
+              stroke-dasharray="12 8" stroke-linecap="round" d=""/>
+        <!-- Hidden raceline used as the source outline; replaced when JSON provides one -->
+        <path id="raceline" d="M929.2,619.7L902.4,619.8L875.3,627.5L847.8,632.4L822.2,630.5L800.2,619.5L777.0,598.6L751.3,576.5L726.9,552.4L709.2,524.0L691.4,494.1L666.3,471.0L635.0,457.8L602.6,448.6L577.7,430.9L548.2,424.2L527.5,404.6L500.9,387.2L470.9,372.9L438.8,362.6L405.4,354.3L375.0,344.0L350.2,327.4L328.3,309.1L301.9,292.4L277.9,268.7L266.7,237.0L260.4,203.9L248.6,175.7L242.4,163.5L242.0,164.2L240.6,165.6L238.7,167.4L236.8,169.1L235.0,170.0L233.9,170.2L232.3,169.9L232.1,169.8L230.9,169.2L230.1,168.0L229.0,166.9L230.9,158.3L243.3,140.9L260.9,122.6L279.0,104.9L309.0,98.6L342.9,103.0L376.5,108.1L410.1,113.4L443.9,118.2L478.1,122.0L512.4,125.4L546.7,128.8L580.9,132.6L614.9,137.4L648.0,142.9L680.9,149.1L713.8,155.5L747.0,161.9L780.4,168.1L813.5,174.3L846.3,180.7L879.3,187.3L912.9,190.5L942.7,179.5L975.6,175.8L1007.7,186.0L1039.3,198.3L1070.7,211.8L1096.9,230.9L1118.4,253.5L1139.0,275.9L1159.5,298.5L1180.3,322.3L1195.6,345.9L1205.8,367.5L1211.8,387.7L1217.3,398.9L1221.1,397.3L1226.9,413.5L1215.3,444.8L1216.8,467.2L1217.1,469.8L1205.9,482.3L1209.2,504.1L1207.3,532.8L1201.2,561.2L1192.4,587.7L1181.7,612.2L1168.4,628.6L1149.6,638.2L1126.0,643.2L1102.3,645.3L1082.6,643.3L1061.4,643.4L1036.5,647.5L1009.6,654.4L982.7,662.3L964.2,661.9L968.4,677.8L992.7,673.9L1020.0,665.6L1045.2,661.2L1067.5,659.7L1088.9,659.1L1110.4,658.9L1136.0,654.9L1159.0,649.8L1178.3,639.2L1193.1,621.7L1203.8,597.3L1212.9,571.0L1219.8,543.0L1223.8,513.1L1221.2,488.5L1214.8,472.1L1216.5,468.1L1226.6,447.0L1233.4,417.7L1227.6,398.6L1222.8,391.8L1221.9,390.4L1217.2,369.9L1209.0,349.6L1196.0,326.5L1177.7,302.7L1157.2,279.2L1136.9,256.7L1116.0,234.5L1094.0,212.3L1066.0,194.5L1034.7,182.1L1002.9,170.5L970.8,160.6L936.9,159.6L906.7,169.9L875.4,173.2L842.4,166.8L809.5,160.4L776.4,154.1L743.0,147.9L709.9,141.6L677.0,135.1L644.0,128.8L611.1,123.0L577.2,117.9L542.6,113.2L508.5,109.0L474.4,104.6L440.6,99.7L407.0,94.3L373.4,89.0L339.7,84.2L305.4,82.0L276.7,93.7L258.5,111.5L240.8,129.7L226.0,147.4L218.9,162.2L218.9,168.2L220.0,169.1L220.8,170.2L222.0,170.5L222.2,170.1L223.6,169.8L224.5,168.8L226.3,167.0L228.6,164.9L230.8,163.3L232.3,162.3L233.1,165.4L241.4,184.3L249.7,215.3L255.6,248.5L268.3,279.3L288.6,306.9L310.7,328.9L333.2,346.7L361.3,361.3L393.2,370.6L425.7,378.4L458.2,389.2L485.3,404.7L507.3,423.2L534.5,438.5L558.7,441.2L580.3,457.8L612.5,468.6L644.7,479.3L673.0,497.3L692.2,525.6L709.1,555.2L732.2,580.5L758.0,602.9L781.6,624.8L804.0,642.4L829.3,649.4L857.1,648.3L885.2,642.5L912.4,635.1Z"
+              fill="none" stroke="none"/>
+        <g id="sf-marker" opacity="0.6">
+          <line id="sf-line1" stroke="#fff" stroke-width="3"/>
+          <line id="sf-line2" stroke="#000" stroke-width="3" stroke-dasharray="5 5"/>
+          <text id="sf-text" fill="#fff" font-size="11" text-anchor="middle" opacity="0.7" font-weight="700" style="font-family:var(--ff-m)">S/F</text>
+        </g>
+        <g id="dots-group" shape-rendering="optimizeSpeed"></g>
+      </svg>
+    </div>
+    <div class="track-controls">
+      <button id="play-btn" class="btn btn-sm" style="border-color:var(--ir);color:var(--ir)">&#9654; Start Race</button>
+      <span id="race-timer" style="font-family:var(--ff-m);font-size:.82rem;color:var(--tm);margin-left:12px">0:00 / 0:40</span>
+      <span id="race-lap" style="font-family:var(--ff-m);font-size:.82rem;color:var(--ir);margin-left:12px">Lap 0 / 0</span>
+    </div>
+    <div class="speed-slider-wrap">
+      <label>REPLAY SPEED</label>
+      <span class="speed-val" style="min-width:32px;text-align:left;color:var(--tm)">0:30</span>
+      <input type="range" id="speed-slider" class="speed-slider" min="30" max="180" value="40" step="5">
+      <span class="speed-val" style="color:var(--tm)">3:00</span>
+      <span class="speed-val" id="speed-display">0:40</span>
+    </div>
+    <div class="track-legend" id="track-legend"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ──────────────────────────────────────────────────────────────────
+ * Standalone Racing Replay
+ * Extracted from grumpyrobot web/grumpyrobot_web.py (S5b)
+ * Expects JSON shape:
+ * {
+ *   "track_name": "Road Atlanta",
+ *   "track_config": "Full Course",        // optional
+ *   "total_laps": 12,
+ *   "raceline_path": "M..L..Z",            // optional; replaces default
+ *   "drivers": [
+ *     {
+ *       "name": "First Last",
+ *       "car_number": "42",
+ *       "race_start_pos": 0,               // 0-indexed
+ *       "race_finish_pos": 0,              // 0-indexed
+ *       "race_avg_lap": 825000,            // 100000ths of a second per lap
+ *       "race_laps": 12,
+ *       "reason_out": "Running",           // or "DNF", "Disconnected", etc.
+ *       "is_us": true,                     // highlight in orange
+ *       "livery": { "color1": "ff9100" }
+ *     }
+ *   ]
+ * }
+ * ────────────────────────────────────────────────────────────────── */
+
+let RACE = null;
+let animState = { running:false, animId:0 };
+
+function setupAnimation(data){
+  RACE = data;
+  /* Reset DOM */
+  document.getElementById('track-title-name').textContent =
+    data.track_name + (data.track_config ? ' — ' + data.track_config : '');
+  const totalLaps = data.total_laps || 0;
+  document.getElementById('title-lap').textContent = 'Lap 0 / ' + totalLaps;
+  document.getElementById('tt-lap-display').innerHTML = '0 <span>/ '+totalLaps+'</span>';
+  document.getElementById('race-lap').textContent = 'Lap 0 / '+totalLaps;
+
+  /* Replace raceline path if provided */
+  if(data.raceline_path){
+    document.getElementById('raceline').setAttribute('d', data.raceline_path);
+  }
+
+  /* Reset dots and legend */
+  document.getElementById('dots-group').innerHTML = '';
+  document.getElementById('track-legend').innerHTML = '';
+
+  /* Build timing tower rows */
+  const ttBody = document.getElementById('tt-body');
+  ttBody.innerHTML = '';
+  ttBody.style.height = (data.drivers.length * 30) + 'px';
+  const sortedByStart = data.drivers.slice().sort((a,b)=>a.race_start_pos-b.race_start_pos);
+  sortedByStart.forEach((drv, i) => {
+    const row = document.createElement('div');
+    row.className = 'tt-row' + (drv.is_us ? ' is-us' : '');
+    row.style.transform = 'translateY('+(i*30)+'px)';
+    const abbr = (drv.name.indexOf(' ')>0
+      ? drv.name.split(/\s+/).slice(-1)[0].substring(0,3)
+      : drv.name.substring(0,3)).toUpperCase();
+    row.innerHTML =
+      '<span class="tt-pos">'+(i+1)+'</span>'+
+      '<span class="tt-stripe" style="background:#'+drv.livery.color1+'"></span>'+
+      '<span class="tt-name">'+abbr+'</span>'+
+      '<span class="tt-interval">—</span>';
+    ttBody.appendChild(row);
+  });
+
+  initRaceAnim(totalLaps, data.drivers);
+}
+
+function initRaceAnim(totalLaps, drivers){
+  const raceline = document.getElementById('raceline');
+  if(!raceline) return;
+  const dotsG = document.getElementById('dots-group');
+  const playBtn = document.getElementById('play-btn');
+  const timerEl = document.getElementById('race-timer');
+  const lapEl = document.getElementById('race-lap');
+  const legendEl = document.getElementById('track-legend');
+  const ttLapEl = document.getElementById('tt-lap-display');
+  const titleLapEl = document.getElementById('title-lap');
+  const ttBody = document.getElementById('tt-body');
+  const speedSlider = document.getElementById('speed-slider');
+  const speedDisplay = document.getElementById('speed-display');
+
+  let DURATION = parseInt(speedSlider.value);
+  const fullLen = raceline.getTotalLength();
+
+  /* Build smooth centerline from outline path (averages opposite samples + Chaikin) */
+  const halfLen = fullLen * 0.5;
+  const RAW_SAMPLES = 200;
+  let rawPts = [];
+  for(let i = 0; i < RAW_SAMPLES; i++){
+    const t = i / RAW_SAMPLES;
+    const p1 = raceline.getPointAtLength(halfLen * t);
+    const p2 = raceline.getPointAtLength(fullLen - halfLen * t);
+    rawPts.push({ x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2 });
+  }
+  function chaikinSmooth(pts){
+    const out=[]; const n=pts.length;
+    for(let i=0;i<n;i++){
+      const j=(i+1)%n;
+      out.push({x:pts[i].x*0.75+pts[j].x*0.25, y:pts[i].y*0.75+pts[j].y*0.25});
+      out.push({x:pts[i].x*0.25+pts[j].x*0.75, y:pts[i].y*0.25+pts[j].y*0.75});
+    }
+    return out;
+  }
+  function resampleUniform(pts, count){
+    const dists=[0];
+    for(let i=1;i<pts.length;i++){
+      const dx=pts[i].x-pts[i-1].x, dy=pts[i].y-pts[i-1].y;
+      dists.push(dists[i-1]+Math.sqrt(dx*dx+dy*dy));
+    }
+    const cdx=pts[0].x-pts[pts.length-1].x, cdy=pts[0].y-pts[pts.length-1].y;
+    const totalD=dists[pts.length-1]+Math.sqrt(cdx*cdx+cdy*cdy);
+    const out=[];
+    for(let i=0;i<count;i++){
+      const target=(i/count)*totalD;
+      let lo=0;
+      for(let k=1;k<pts.length;k++){ if(dists[k]<=target) lo=k; else break; }
+      if(target>=dists[pts.length-1]){
+        const remain=target-dists[pts.length-1];
+        const cl=totalD-dists[pts.length-1];
+        const tt=cl>0?remain/cl:0;
+        out.push({x:pts[pts.length-1].x+(pts[0].x-pts[pts.length-1].x)*tt,
+                  y:pts[pts.length-1].y+(pts[0].y-pts[pts.length-1].y)*tt});
+      } else {
+        const hi=(lo+1)%pts.length;
+        const seg=dists[hi]-dists[lo];
+        const tt=seg>0?(target-dists[lo])/seg:0;
+        out.push({x:pts[lo].x+(pts[hi].x-pts[lo].x)*tt,
+                  y:pts[lo].y+(pts[hi].y-pts[lo].y)*tt});
+      }
+    }
+    return out;
+  }
+  let smoothed=rawPts;
+  for(let p=0;p<3;p++) smoothed=chaikinSmooth(smoothed);
+  const centerPts=resampleUniform(smoothed,400);
+  const NUM_SAMPLES=centerPts.length;
+  const centerDists=[0];
+  for(let i=1;i<NUM_SAMPLES;i++){
+    const dx=centerPts[i].x-centerPts[i-1].x;
+    const dy=centerPts[i].y-centerPts[i-1].y;
+    centerDists.push(centerDists[i-1]+Math.sqrt(dx*dx+dy*dy));
+  }
+  const closeDx=centerPts[0].x-centerPts[NUM_SAMPLES-1].x;
+  const closeDy=centerPts[0].y-centerPts[NUM_SAMPLES-1].y;
+  const lapLen=centerDists[NUM_SAMPLES-1]+Math.sqrt(closeDx*closeDx+closeDy*closeDy);
+
+  let pathD='M'+centerPts[0].x.toFixed(1)+','+centerPts[0].y.toFixed(1);
+  for(let i=1;i<NUM_SAMPLES;i++) pathD+='L'+centerPts[i].x.toFixed(1)+','+centerPts[i].y.toFixed(1);
+  pathD+='Z';
+  document.getElementById('track-glow-path').setAttribute('d',pathD);
+  document.getElementById('track-surface').setAttribute('d',pathD);
+  document.getElementById('track-center-stripe').setAttribute('d',pathD);
+
+  /* S/F marker */
+  const sfPt=centerPts[0], sfPt2=centerPts[1];
+  const sfAngle=Math.atan2(sfPt2.y-sfPt.y, sfPt2.x-sfPt.x)+Math.PI/2;
+  const sfLen=18;
+  const sl1=document.getElementById('sf-line1');
+  const sl2=document.getElementById('sf-line2');
+  const sfTxt=document.getElementById('sf-text');
+  sl1.setAttribute('x1', sfPt.x-Math.cos(sfAngle)*sfLen);
+  sl1.setAttribute('y1', sfPt.y-Math.sin(sfAngle)*sfLen);
+  sl1.setAttribute('x2', sfPt.x+Math.cos(sfAngle)*sfLen);
+  sl1.setAttribute('y2', sfPt.y+Math.sin(sfAngle)*sfLen);
+  sl2.setAttribute('x1', sfPt.x-Math.cos(sfAngle)*sfLen);
+  sl2.setAttribute('y1', sfPt.y-Math.sin(sfAngle)*sfLen);
+  sl2.setAttribute('x2', sfPt.x+Math.cos(sfAngle)*sfLen);
+  sl2.setAttribute('y2', sfPt.y+Math.sin(sfAngle)*sfLen);
+  sfTxt.setAttribute('x', sfPt.x);
+  sfTxt.setAttribute('y', sfPt.y-sfLen-5);
+
+  function getCenterPoint(frac){
+    frac=((frac%1.0)+1.0)%1.0;
+    const targetDist=frac*lapLen;
+    let lo=0, hi=NUM_SAMPLES-1;
+    while(lo<hi-1){ const mid=(lo+hi)>>1; if(centerDists[mid]<=targetDist) lo=mid; else hi=mid; }
+    if(targetDist>=centerDists[NUM_SAMPLES-1]){
+      const remain=targetDist-centerDists[NUM_SAMPLES-1];
+      const closeLen=lapLen-centerDists[NUM_SAMPLES-1];
+      const t2=closeLen>0?remain/closeLen:0;
+      return { x:centerPts[NUM_SAMPLES-1].x+(centerPts[0].x-centerPts[NUM_SAMPLES-1].x)*t2,
+               y:centerPts[NUM_SAMPLES-1].y+(centerPts[0].y-centerPts[NUM_SAMPLES-1].y)*t2 };
+    }
+    const segLen=centerDists[hi]-centerDists[lo];
+    const t2=segLen>0?(targetDist-centerDists[lo])/segLen:0;
+    return { x:centerPts[lo].x+(centerPts[hi].x-centerPts[lo].x)*t2,
+             y:centerPts[lo].y+(centerPts[hi].y-centerPts[lo].y)*t2 };
+  }
+
+  let leaderAvg=999999;
+  drivers.forEach(d => {
+    if(d.race_avg_lap>0 && d.race_avg_lap<leaderAvg && d.race_laps>=totalLaps*0.9)
+      leaderAvg=d.race_avg_lap;
+  });
+
+  function abbrev(name){
+    const parts=name.trim().split(/\s+/);
+    if(parts.length>=2) return parts[parts.length-1].substring(0,3).toUpperCase();
+    return name.substring(0,3).toUpperCase();
+  }
+  function fmtTime(sec){ const m=Math.floor(sec/60), s=Math.floor(sec%60); return m+':'+(s<10?'0':'')+s; }
+  function fmtInterval(sec){
+    if(sec<60) return '+'+sec.toFixed(3);
+    const m=Math.floor(sec/60); let s=(sec-m*60).toFixed(3);
+    if(parseFloat(s)<10) s='0'+s;
+    return '+'+m+':'+s;
+  }
+
+  speedSlider.oninput=function(){ DURATION=parseInt(this.value); speedDisplay.textContent=fmtTime(DURATION); };
+  speedDisplay.textContent=fmtTime(DURATION);
+
+  const sorted=drivers.slice().sort((a,b)=>a.race_start_pos-b.race_start_pos);
+  const dots=[];
+  const ttRows=Array.from(ttBody.querySelectorAll('.tt-row'));
+
+  /* Glow filter for "us" */
+  const svgEl=raceline.parentElement;
+  let existingDefs=svgEl.querySelector('defs');
+  if(!existingDefs){ existingDefs=document.createElementNS('http://www.w3.org/2000/svg','defs'); svgEl.insertBefore(existingDefs, svgEl.firstChild); }
+  if(!existingDefs.querySelector('#dot-glow')){
+    const glowFilter=document.createElementNS('http://www.w3.org/2000/svg','filter');
+    glowFilter.setAttribute('id','dot-glow');
+    glowFilter.innerHTML='<feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ff9100" flood-opacity="0.9"/>';
+    existingDefs.appendChild(glowFilter);
+  }
+
+  sorted.forEach((drv, idx) => {
+    const ns='http://www.w3.org/2000/svg';
+    const abr=abbrev(drv.name);
+    const g=document.createElementNS(ns,'g'); g.setAttribute('opacity','0');
+    const c=document.createElementNS(ns,'circle');
+    c.setAttribute('r', drv.is_us?14:11); c.setAttribute('cx','0'); c.setAttribute('cy','0');
+    c.setAttribute('fill','#'+drv.livery.color1);
+    c.setAttribute('stroke', drv.is_us?'#fff':'rgba(0,0,0,.4)');
+    c.setAttribute('stroke-width', drv.is_us?'2.5':'1');
+    if(drv.is_us) g.setAttribute('filter','url(#dot-glow)');
+    g.appendChild(c);
+    const rect=document.createElementNS(ns,'rect');
+    rect.setAttribute('x','16'); rect.setAttribute('y','-10');
+    rect.setAttribute('width','40'); rect.setAttribute('height','20'); rect.setAttribute('rx','3');
+    rect.setAttribute('fill', drv.is_us?'rgba(255,145,0,.85)':'rgba(0,0,0,.8)');
+    rect.setAttribute('stroke', drv.is_us?'#ff9100':'rgba(255,255,255,.15)');
+    rect.setAttribute('stroke-width','1');
+    g.appendChild(rect);
+    const txt=document.createElementNS(ns,'text');
+    txt.setAttribute('x','36'); txt.setAttribute('y','5');
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('fill', drv.is_us?'#000':'#fff');
+    txt.setAttribute('font-size','12'); txt.setAttribute('font-weight','800');
+    txt.setAttribute('font-family','Nunito, sans-serif');
+    txt.setAttribute('letter-spacing','0.5');
+    txt.textContent=abr;
+    g.appendChild(txt);
+    dotsG.appendChild(g);
+    dots.push({el:g, drv:drv, totalDist:0, ttRow:ttRows[idx]||null, abbr:abr});
+
+    const li=document.createElement('div');
+    li.className='track-legend-item'+(drv.is_us?' is-us':'')+(drv.reason_out!=='Running'?' dnf':'');
+    li.innerHTML='<span class="track-legend-dot" style="background:#'+drv.livery.color1+'"></span>#'+drv.car_number+' '+drv.name;
+    legendEl.appendChild(li);
+  });
+
+  const startPt=getCenterPoint(0);
+  dots.forEach(d => d.el.setAttribute('transform','translate('+startPt.x+','+startPt.y+')'));
+
+  let startTime=0, lastFrame=0;
+
+  function animate(ts){
+    if(ts-lastFrame<33){ animState.animId=requestAnimationFrame(animate); return; }
+    lastFrame=ts;
+    const elapsed=(ts-startTime)/1000;
+    const progress=Math.min(elapsed/DURATION,1.0);
+    const leaderLapFloat=progress*totalLaps;
+    const lap=Math.min(Math.floor(leaderLapFloat), totalLaps);
+    timerEl.textContent=fmtTime(Math.floor(elapsed))+' / '+fmtTime(DURATION);
+    lapEl.textContent='Lap '+lap+' / '+totalLaps;
+    ttLapEl.innerHTML=lap+' <span>/ '+totalLaps+'</span>';
+    titleLapEl.textContent='Lap '+lap+' / '+totalLaps;
+
+    dots.forEach(d => {
+      const drv=d.drv;
+      const maxLaps=drv.race_laps;
+      const speed=(drv.race_avg_lap>0 && drv.race_laps>1) ? leaderAvg/drv.race_avg_lap : 0.8;
+      const drvLapFloat=Math.min(leaderLapFloat*speed, maxLaps);
+      d.totalDist=drvLapFloat;
+      let trackFrac=drvLapFloat%1.0;
+      const offset=(drv.race_start_pos/drivers.length)*0.02;
+      trackFrac=(trackFrac+offset)%1.0;
+      const pt=getCenterPoint(trackFrac);
+      d.el.setAttribute('transform','translate('+pt.x+','+pt.y+')');
+      d.el.setAttribute('opacity','1');
+      if(drvLapFloat>=maxLaps && drv.reason_out!=='Running'){
+        d.el.setAttribute('opacity', Math.max(0, 1-(leaderLapFloat*speed-maxLaps)*4));
+      }
+      if(drv.race_laps===0) d.el.setAttribute('opacity', Math.max(0, 1-progress*5));
+    });
+
+    const ranked=dots.slice().sort((a,b)=>b.totalDist-a.totalDist);
+    const leaderDist=ranked[0]?ranked[0].totalDist:0;
+    const lapTimeSec=leaderAvg>0 && leaderAvg<999999 ? leaderAvg/10000 : 80;
+
+    ranked.forEach((d, idx) => {
+      if(!d.ttRow) return;
+      d.ttRow.style.transform='translateY('+(idx*30)+'px)';
+      d.ttRow.querySelector('.tt-pos').textContent=idx+1;
+      d.ttRow.querySelector('.tt-name').textContent=d.abbr;
+      const intEl=d.ttRow.querySelector('.tt-interval');
+      const isDnf=d.drv.reason_out!=='Running' && progress>0 && d.totalDist>=d.drv.race_laps;
+      if(isDnf){
+        intEl.textContent='OUT'; intEl.className='tt-interval out';
+        d.ttRow.classList.add('tt-out');
+      } else if(idx===0){
+        intEl.textContent='Leader'; intEl.className='tt-interval leader';
+        d.ttRow.classList.remove('tt-out');
+      } else {
+        const gapSec=(leaderDist-d.totalDist)*lapTimeSec;
+        intEl.textContent=fmtInterval(gapSec); intEl.className='tt-interval';
+        d.ttRow.classList.remove('tt-out');
+      }
+    });
+
+    if(progress<1.0) animState.animId=requestAnimationFrame(animate);
+    else { animState.running=false; playBtn.textContent='\u25B6 Replay'; }
+  }
+
+  playBtn.onclick=function(){
+    if(animState.running){
+      cancelAnimationFrame(animState.animId);
+      animState.running=false;
+      playBtn.textContent='\u25B6 Start Race';
+      return;
+    }
+    animState.running=true;
+    playBtn.textContent='\u23F8 Pause';
+    startTime=performance.now(); lastFrame=0;
+    dots.forEach(d => { d.el.setAttribute('opacity','0'); d.totalDist=0; });
+    animState.animId=requestAnimationFrame(animate);
+  };
+}
+
+/* ── File loaders ── */
+document.getElementById('json-file').addEventListener('change', function(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev => { try { setupAnimation(JSON.parse(ev.target.result)); } catch(err){ alert('Bad JSON: '+err.message); } };
+  r.readAsText(f);
+});
+document.getElementById('load-sample').addEventListener('click', function(){
+  fetch('sample_data.json').then(r=>r.json()).then(setupAnimation)
+    .catch(err => alert('Could not load sample_data.json (must run via http server): '+err.message));
+});
+
+/* Try to auto-load sample on first open */
+fetch('sample_data.json').then(r=>r.ok?r.json():null).then(d => { if(d) setupAnimation(d); }).catch(()=>{});
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "cars": [
+    {
+      "CarIdx": 0,
+      "CarNumber": "00",
+      "Name": "Example Driver",
+      "CustId": null,
+      "LivePos": 1,
+      "GridPosition": 1,
+      "Lap": 0,
+      "Best": -1,
+      "Last": -1,
+      "LapDistPct": 0,
+      "OnPitRoad": false,
+      "DOTDPercent": 0
+    }
+  ]
+}

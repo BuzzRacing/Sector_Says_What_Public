@@ -1,0 +1,26 @@
+# ══════════════════════════════════════════════════
+#  Sector Says What — Python Dependencies
+# ══════════════════════════════════════════════════
+
+# iRacing telemetry (shared memory)
+pyirsdk
+iracingdataapi
+
+# AI Commentary
+openai
+PyYAML
+
+# Web Dashboard
+Flask
+flask-cors
+
+# Audio Pipeline
+imageio-ffmpeg
+pyfmodex
+pydub
+
+# TTS (Inworld)
+requests
+
+# Terminal
+colorama

@@ -1,0 +1,19 @@
+{
+  "track_name": "Road Atlanta",
+  "track_config": "Full Course",
+  "total_laps": 12,
+  "drivers": [
+    { "name": "Anthony Bomb",     "car_number": "42", "race_start_pos": 5, "race_finish_pos": 2, "race_avg_lap": 825000, "race_laps": 12, "reason_out": "Running", "is_us": true,  "livery": { "color1": "ff9100" } },
+    { "name": "Lars Mikkelsen",   "car_number": "7",  "race_start_pos": 0, "race_finish_pos": 0, "race_avg_lap": 819500, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "1e88e5" } },
+    { "name": "Diego Fernandez",  "car_number": "11", "race_start_pos": 1, "race_finish_pos": 1, "race_avg_lap": 821300, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "e53935" } },
+    { "name": "Yuki Tanaka",      "car_number": "23", "race_start_pos": 2, "race_finish_pos": 4, "race_avg_lap": 826800, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "fdd835" } },
+    { "name": "Pierre Laurent",   "car_number": "9",  "race_start_pos": 3, "race_finish_pos": 3, "race_avg_lap": 824100, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "8e24aa" } },
+    { "name": "Ingrid Holm",      "car_number": "14", "race_start_pos": 4, "race_finish_pos": 5, "race_avg_lap": 827500, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "00acc1" } },
+    { "name": "Marco Vitali",     "car_number": "33", "race_start_pos": 6, "race_finish_pos": 6, "race_avg_lap": 828900, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "43a047" } },
+    { "name": "Sara Nowak",       "car_number": "18", "race_start_pos": 7, "race_finish_pos": 7, "race_avg_lap": 830200, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "fb8c00" } },
+    { "name": "Carlos Mendez",    "car_number": "55", "race_start_pos": 8, "race_finish_pos": 9, "race_avg_lap": 832000, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "6d4c41" } },
+    { "name": "Hannah Schmidt",   "car_number": "77", "race_start_pos": 9, "race_finish_pos": 8, "race_avg_lap": 831100, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "c0ca33" } },
+    { "name": "Owen Reilly",      "car_number": "21", "race_start_pos": 10,"race_finish_pos": 11,"race_avg_lap": 840000, "race_laps": 7,  "reason_out": "DNF",     "is_us": false, "livery": { "color1": "5e35b1" } },
+    { "name": "Naomi Park",       "car_number": "88", "race_start_pos": 11,"race_finish_pos": 10,"race_avg_lap": 833500, "race_laps": 12, "reason_out": "Running", "is_us": false, "livery": { "color1": "00897b" } }
+  ]
+}

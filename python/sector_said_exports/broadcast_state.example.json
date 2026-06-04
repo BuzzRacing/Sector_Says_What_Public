@@ -1,0 +1,13 @@
+{
+  "status": "idle",
+  "engine_pid": null,
+  "race_id": null,
+  "lap": 0,
+  "total_laps": 0,
+  "elapsed_s": 0,
+  "car_count": 0,
+  "commentary_count": 0,
+  "last_trigger": null,
+  "started_at": null,
+  "flags": 0
+}

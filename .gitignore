@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Local agent/browser state
+.claude/
+.codex-chrome-profile/
+
+# Environment / secrets
+.env
+*.env
+
+# Old backup
+OLD_BACK/
+
+# Binary / media assets (large)
+*.dll
+*.mp3
+*.wav
+
+# Auto-generated runtime files
+python/race_config.json
+python/race_history.db
+python/race_history.db-*
+python/race_history*.db*
+python/sector_said/
+python/sector_said_exports/*.json
+python/sector_said_exports/*.jsonl
+python/sector_said_exports/*.txt
+!python/sector_said_exports/*.example.json
+sector_said_exports/*.json
+sector_said_exports/*.jsonl
+engine.log
+
+# iRacing /data API credentials (never commit)
+python/race_secrets.json
+
+# FMOD local cache/user state
+audio/fmod/**/.cache/
+audio/fmod/**/.unsaved/
+audio/fmod/**/.user/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp

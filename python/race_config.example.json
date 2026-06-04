@@ -1,0 +1,41 @@
+{
+  "power_unit": {
+    "provider": "openai",
+    "openai": {
+      "model": "gpt-4o-mini",
+      "max_tokens": 500,
+      "temperature": 0.3
+    },
+    "local_llm": {
+      "base_url": "http://localhost:1234/v1",
+      "api_key": "not-needed",
+      "model": "local-model",
+      "max_tokens": 760,
+      "temperature": 1.0
+    },
+    "iracing_api": {
+      "enabled": false,
+      "base_url": "https://members-ng.iracing.com",
+      "cache_ttl_hours": 24
+    }
+  },
+  "owner_drivers": {
+    "Your iRacing Name": {
+      "display_name": "Your iRacing Name",
+      "nickname": "",
+      "team_name": "",
+      "bio": "",
+      "iracing_customer_id": "",
+      "car_number": "",
+      "commentary_frequency": "normal",
+      "driving_style": "",
+      "featured_phrases": [],
+      "profile_image": "",
+      "is_active": true
+    }
+  },
+  "system": {
+    "audio_output_index": 0,
+    "enable_tts": true
+  }
+}

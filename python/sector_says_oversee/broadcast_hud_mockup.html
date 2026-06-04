@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sector Says What — Broadcast HUD V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Titillium+Web:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/hud_v2.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     STANDBY OVERLAY — Shown until iRacing data feed goes live
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="standby-overlay" id="standby-overlay">
+  <div class="standby-card">
+    <div class="standby-brand">Sector Says What</div>
+    <div class="standby-ring">
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="standbyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#00E676"/>
+            <stop offset="50%"  stop-color="#D4AF37"/>
+            <stop offset="100%" stop-color="#00E676"/>
+          </linearGradient>
+        </defs>
+        <circle class="standby-ring-track" cx="60" cy="60" r="52"/>
+        <circle class="standby-ring-arc"   cx="60" cy="60" r="52"/>
+      </svg>
+      <div class="standby-ring-core">LIVE</div>
+    </div>
+    <div class="standby-title">Waiting for iRacing</div>
+    <div class="standby-subtitle">Telemetry feed standing by</div>
+    <div class="standby-status">
+      <span class="standby-status-dot"></span>
+      <span>Engine</span>
+      <span class="standby-status-value" id="standby-engine-status">Connecting…</span>
+    </div>
+  </div>
+</div>
+
+<!-- FLAG BACKGROUND GLOW — activated by JS when iRacing flags change -->
+<div class="flag-glow"></div>
+
+<!-- ROTATING BACKGROUND (crossfade between HUD-tagged images from media library) -->
+<div class="race-bg" id="race-bg">
+  <div class="bg-layer bg-a" id="bg-a"></div>
+  <div class="bg-layer bg-b" id="bg-b"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MASTHEAD — Big Bold Branding
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="masthead">
+  <div class="masthead-brand">
+    <span class="brand-text">Sector Says What</span>
+  </div>
+
+  <div class="masthead-session">
+    <div class="session-block">
+      <span class="session-label">Circuit</span>
+      <span class="session-value highlight" id="masthead-circuit">—</span>
+    </div>
+  </div>
+
+  <div class="masthead-weather">
+    <div class="weather-chip">
+      <div class="weather-val" id="masthead-air">—</div>
+      <div class="weather-lbl">Air</div>
+    </div>
+    <div class="weather-chip">
+      <div class="weather-val" id="masthead-track">—</div>
+      <div class="weather-lbl">Track</div>
+    </div>
+    <div class="weather-chip">
+      <div class="weather-val" id="masthead-humid">—</div>
+      <div class="weather-lbl">Humid</div>
+    </div>
+  </div>
+
+  <!-- Settings Gear -->
+  <div class="masthead-settings" onclick="_openHudSettings()">
+    <svg class="settings-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Sound check button CSS (button markup lives under .col-center below) -->
+<style>
+  .soundcheck-btn {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; margin-top: 12px;
+    padding: 14px 22px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(46,204,113,0.95), rgba(212,175,55,0.95));
+    color: #0a0a0a; font-family: "Titillium Web", sans-serif;
+    border: 2px solid rgba(0,0,0,0.45);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15) inset;
+    cursor: pointer; text-align: left;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+  }
+  .soundcheck-btn:hover  { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2) inset; }
+  .soundcheck-btn:active { transform: translateY(0); }
+  .soundcheck-btn .soundcheck-icon { flex: 0 0 32px; display: grid; place-items: center; }
+  .soundcheck-btn .soundcheck-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .soundcheck-btn .soundcheck-label {
+    font-weight: 900; font-size: 18px; letter-spacing: 0.08em; text-transform: uppercase;
+    line-height: 1.1;
+  }
+  .soundcheck-btn .soundcheck-sub {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.82;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .soundcheck-btn .soundcheck-sub .sc-dev-label { opacity: 0.7; margin-right: 6px; text-transform: uppercase; font-size: 11px; }
+  .soundcheck-btn .soundcheck-sub .sc-dev-name { font-weight: 800; }
+  .soundcheck-btn.busy   { cursor: progress; opacity: 0.75; }
+  .soundcheck-btn.ok     { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+  .soundcheck-btn.err    { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; }
+  .soundcheck-btn.warn   { background: linear-gradient(135deg, #f39c12, #d68910); color: #1a1a1a; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     THREE-COLUMN LAYOUT
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="hud-layout">
+
+  <!-- ═══════════ LEFT COLUMN: Tower + DOTD ═══════════ -->
+  <div class="col-left">
+
+    <!-- TIMING TOWER — F1 Broadcast Style -->
+    <div class="timing-tower">
+      <!-- Lap header integrated into tower -->
+      <div class="tower-lap-header">
+        <span class="tower-lap-label">Lap</span>
+        <span class="tower-lap-nums">42 <span class="lap-dim">/ 53</span></span>
+      </div>
+
+      <!-- P1 -->
+      <div class="tower-row">
+        <div class="tower-pos">1</div>
+        <div class="tower-color tc-ferrari"></div>
+        <div class="tower-name">HAM</div>
+        <div class="tower-gap leader">Leader</div>
+        <div class="tower-delta gained"><span class="d-car">▲</span><span class="d-num">3</span></div>
+      </div>
+      <!-- P2 -->
+      <div class="tower-row">
+        <div class="tower-pos">2</div>
+        <div class="tower-color tc-merc"></div>
+        <div class="tower-name">RUS</div>
+        <div class="tower-gap">+7.547</div>
+        <div class="tower-delta gained"><span class="d-car">▲</span><span class="d-num">1</span></div>
+      </div>
+      <!-- P3 -->
+      <div class="tower-row">
+        <div class="tower-pos">3</div>
+        <div class="tower-color tc-redbull"></div>
+        <div class="tower-name">VER</div>
+        <div class="tower-gap">+9.963</div>
+        <div class="tower-delta lost"><span class="d-num">2</span><span class="d-car">▼</span></div>
+      </div>
+      <!-- P4 -->
+      <div class="tower-row">
+        <div class="tower-pos">4</div>
+        <div class="tower-color tc-williams"></div>
+        <div class="tower-name">ALB</div>
+        <div class="tower-gap">+40.128</div>
+        <div class="tower-delta even"><span class="d-num">0</span></div>
+      </div>
+      <!-- P5 -->
+      <div class="tower-row">
+        <div class="tower-pos">5</div>
+        <div class="tower-color tc-ferrari"></div>
+        <div class="tower-name">SAI</div>
+        <div class="tower-gap">+5.549</div>
+        <div class="tower-delta gained"><span class="d-car">▲</span><span class="d-num">2</span></div>
+      </div>
+      <!-- P6 -->
+      <div class="tower-row">
+        <div class="tower-pos">6</div>
+        <div class="tower-color tc-mclaren"></div>
+        <div class="tower-name">NOR</div>
+        <div class="tower-gap">+5.756</div>
+        <div class="tower-delta lost"><span class="d-num">1</span><span class="d-car">▼</span></div>
+      </div>
+      <!-- P7 -->
+      <div class="tower-row">
+        <div class="tower-pos">7</div>
+        <div class="tower-color tc-alpine"></div>
+        <div class="tower-name">GAS</div>
+        <div class="tower-gap">+17.054</div>
+        <div class="tower-delta even"><span class="d-num">0</span></div>
+      </div>
+      <!-- P8 -->
+      <div class="tower-row">
+        <div class="tower-pos">8</div>
+        <div class="tower-color tc-am"></div>
+        <div class="tower-name">STR <span class="tower-pit-chip">PIT</span></div>
+        <div class="tower-gap" style="color:#ffb84d">+1.066</div>
+        <div class="tower-delta lost"><span class="d-num">3</span><span class="d-car">▼</span></div>
+      </div>
+      <!-- P9 -->
+      <div class="tower-row">
+        <div class="tower-pos">9</div>
+        <div class="tower-color tc-haas"></div>
+        <div class="tower-name">HUL</div>
+        <div class="tower-gap">+0.619</div>
+        <div class="tower-delta gained"><span class="d-car">▲</span><span class="d-num">4</span></div>
+      </div>
+      <!-- P10 -->
+      <div class="tower-row">
+        <div class="tower-pos">10</div>
+        <div class="tower-color tc-redbull"></div>
+        <div class="tower-name">PER</div>
+        <div class="tower-gap">+1.638</div>
+        <div class="tower-delta lost"><span class="d-num">2</span><span class="d-car">▼</span></div>
+      </div>
+
+      <!-- Owner Driver Outside Top 10 -->
+      <div class="tower-sep"></div>
+      <div class="tower-row focus-driver">
+        <div class="tower-pos">14</div>
+        <div class="tower-color tc-player"></div>
+        <div class="tower-name">YOU</div>
+        <div class="tower-gap">+48.221</div>
+        <div class="tower-delta gained"><span class="d-car">▲</span><span class="d-num">6</span></div>
+      </div>
+
+      <!-- OUT row — faded -->
+      <div class="tower-row out-row">
+        <div class="tower-pos">—</div>
+        <div class="tower-color tc-generic"></div>
+        <div class="tower-name">BOT</div>
+        <div class="tower-out-label">OUT</div>
+      </div>
+    </div>
+
+    <!-- DRIVER OF THE DAY -->
+    <div class="dotd-section">
+      <!-- #1 Hero Card — photo right, fades into card -->
+      <div class="dotd-hero" id="dotd-hero">
+        <div class="dotd-hero-left">
+          <div class="dotd-hero-tag">Driver of the Day</div>
+          <div class="dotd-hero-score-row">
+            <div class="dotd-hero-pts">59.9</div>
+            <div class="dotd-hero-unit">%</div>
+          </div>
+          <div class="dotd-hero-footer">
+            <div class="dotd-hero-color-bar" style="background: #229971;"></div>
+            <div class="dotd-hero-name">Stroll</div>
+            <div class="dotd-hero-pos">Racing P10</div>
+          </div>
+        </div>
+        <div class="dotd-hero-photo" style="background-image: url('backgrounds/sector_says_what_logo_alternate.png');"></div>
+      </div>
+
+      <!-- #2 & #3 Runner cards — gap-to-leader + fill bar -->
+      <div class="dotd-runner-row">
+        <div class="dotd-runner" id="dotd-r1">
+          <div class="dotd-runner-top">
+            <div class="dotd-runner-rank">2nd</div>
+            <div class="dotd-runner-gap">-21</div>
+          </div>
+          <div class="dotd-runner-footer">
+            <div class="dotd-runner-color-bar" style="background: #6CD3BF;"></div>
+            <div class="dotd-runner-name">Hamilton</div>
+          </div>
+          <div class="dotd-runner-bar-track"><div class="dotd-runner-bar-fill" style="width:77%; background:#6CD3BF;"></div></div>
+        </div>
+        <div class="dotd-runner" id="dotd-r2">
+          <div class="dotd-runner-top">
+            <div class="dotd-runner-rank">3rd</div>
+            <div class="dotd-runner-gap">-24</div>
+          </div>
+          <div class="dotd-runner-footer">
+            <div class="dotd-runner-color-bar" style="background: #FF8700;"></div>
+            <div class="dotd-runner-name">Norris</div>
+          </div>
+          <div class="dotd-runner-bar-track"><div class="dotd-runner-bar-fill" style="width:74%; background:#FF8700;"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ CENTER COLUMN: Commentary Transcript ═══════════ -->
+  <div class="col-center">
+    <div class="commentary-transcript">
+
+      <!-- ACTIVE — Most Recent Commentary (Big, featured) -->
+      <div class="commentary-active">
+        <div class="active-bg-photo" style="background-image: url('commentators/murray_default.png');"></div>
+        <div class="active-content">
+          <div class="active-meta">
+            <span class="active-type">Overtake Alert</span>
+            <span class="active-commentator">Murray</span>
+            <span class="active-location">Studio</span>
+          </div>
+          <div class="active-waveform">
+            <div class="wave-bar" style="--h: 22px; animation-delay: 0s;"></div>
+            <div class="wave-bar" style="--h: 14px; animation-delay: 0.08s;"></div>
+            <div class="wave-bar" style="--h: 26px; animation-delay: 0.12s;"></div>
+            <div class="wave-bar" style="--h: 10px; animation-delay: 0.18s;"></div>
+            <div class="wave-bar" style="--h: 20px; animation-delay: 0.04s;"></div>
+            <div class="wave-bar" style="--h: 16px; animation-delay: 0.22s;"></div>
+            <div class="wave-bar" style="--h: 28px; animation-delay: 0.08s;"></div>
+            <div class="wave-bar" style="--h: 12px; animation-delay: 0.26s;"></div>
+            <div class="wave-bar" style="--h: 18px; animation-delay: 0.04s;"></div>
+            <div class="wave-bar" style="--h: 24px; animation-delay: 0.16s;"></div>
+            <div class="wave-bar" style="--h: 8px; animation-delay: 0.12s;"></div>
+            <div class="wave-bar" style="--h: 22px; animation-delay: 0.2s;"></div>
+            <div class="wave-bar" style="--h: 14px; animation-delay: 0.08s;"></div>
+            <div class="wave-bar" style="--h: 26px; animation-delay: 0.24s;"></div>
+            <div class="wave-bar" style="--h: 10px; animation-delay: 0.04s;"></div>
+            <div class="wave-bar" style="--h: 20px; animation-delay: 0.16s;"></div>
+            <div class="wave-bar" style="--h: 28px; animation-delay: 0.12s;"></div>
+            <div class="wave-bar" style="--h: 12px; animation-delay: 0.2s;"></div>
+            <div class="wave-bar" style="--h: 22px; animation-delay: 0.08s;"></div>
+            <div class="wave-bar" style="--h: 16px; animation-delay: 0.24s;"></div>
+            <div class="wave-bar" style="--h: 24px; animation-delay: 0.06s;"></div>
+            <div class="wave-bar" style="--h: 10px; animation-delay: 0.18s;"></div>
+            <div class="wave-bar" style="--h: 20px; animation-delay: 0.1s;"></div>
+            <div class="wave-bar" style="--h: 26px; animation-delay: 0.22s;"></div>
+            <div class="wave-bar" style="--h: 14px; animation-delay: 0.02s;"></div>
+          </div>
+          <div class="active-text">
+            "<span class="hl">Stroll</span> absolutely lunges up the inside at Turn 5 — what a move! He's past <span class="hl">Hulkenberg</span> and into eighth position, brilliant racecraft under pressure!"
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY — Previous commentary scrolling down, fading out -->
+      <div class="commentary-history">
+        <div class="history-item">
+          <div class="history-photo" style="background-image: url('commentators/nigel_studio_pose_07.png');"></div>
+          <div class="history-body">
+            <div class="history-meta">
+              <span class="history-type">Pit Entry</span>
+              <span class="history-who">Nigel</span>
+              <span class="history-where">Pit Lane</span>
+            </div>
+            <div class="history-text">Hamilton dives into the pit lane — box box box, this could reshape the top 5. Hards going on, they're going long!</div>
+          </div>
+        </div>
+
+        <div class="history-item">
+          <div class="history-photo" style="background-image: url('commentators/clara_studio_pose_02.png');"></div>
+          <div class="history-body">
+            <div class="history-meta">
+              <span class="history-type">Midfield Battle</span>
+              <span class="history-who">Clara</span>
+              <span class="history-where">Paddock</span>
+            </div>
+            <div class="history-text">Three cars nose to tail through Turns 11, 12, and 13 — this is edge-of-your-seat stuff!</div>
+          </div>
+        </div>
+
+        <div class="history-item">
+          <div class="history-photo" style="background-image: url('commentators/sienna_studio_pose_02.png');"></div>
+          <div class="history-body">
+            <div class="history-meta">
+              <span class="history-type">Race Update</span>
+              <span class="history-who">Sienna</span>
+              <span class="history-where">Studio</span>
+            </div>
+            <div class="history-text">Russell has closed to within 7 seconds of the leader with 11 laps remaining. The gap is coming down.</div>
+          </div>
+        </div>
+
+        <div class="history-item">
+          <div class="history-photo" style="background-image: url('commentators/theo_pitlane_pose_04.png');"></div>
+          <div class="history-body">
+            <div class="history-meta">
+              <span class="history-type">Historical</span>
+              <span class="history-who">Theo</span>
+              <span class="history-where">Pit Lane</span>
+            </div>
+            <div class="history-text">This reminds me of Senna's charge through the field at Donington '93 — relentless, fearless, pure racing instinct.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SOUND CHECK BUTTON — wide, always visible, shows current audio device -->
+    <button id="soundcheck-btn" class="soundcheck-btn" type="button"
+            onclick="_triggerSoundcheck()"
+            title="Lead commentator says hello — verify levels on the routed audio device">
+      <div class="soundcheck-icon">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8"  y1="23" x2="16" y2="23"/>
+        </svg>
+      </div>
+      <div class="soundcheck-body">
+        <div class="soundcheck-label" id="soundcheck-label">Sound Check</div>
+        <div class="soundcheck-sub">
+          <span class="sc-dev-label">Routing to</span>
+          <span class="sc-dev-name" id="soundcheck-device">— checking audio device —</span>
+        </div>
+      </div>
+    </button>
+
+  </div>
+
+  <!-- ═══════════ RIGHT COLUMN: Contextual Cards ═══════════ -->
+  <div class="col-right">
+
+    <!-- BATTLE CARD -->
+    <div class="battle-card">
+      <div class="battle-header">
+        <span class="battle-label">Battle for P8</span>
+        <span class="battle-gap-val">+0.619</span>
+      </div>
+      <div class="battle-drivers">
+        <div class="battle-driver">
+          <div class="battle-pos-bg">8</div>
+          <div class="battle-d-name" style="color: #229971;">Stroll</div>
+          <div class="battle-d-team">#18</div>
+        </div>
+        <div class="battle-driver">
+          <div class="battle-pos-bg">9</div>
+          <div class="battle-d-name" style="color: #B6BABD;">Hulkenberg</div>
+          <div class="battle-d-team">#27</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERTAKE / INCIDENT FLASH (full width, appear/disappear) -->
+    <div class="overtake-card" id="overtake-card" style="display:none">
+      <div class="overtake-tag">Overtake</div>
+      <div class="overtake-body">
+        <span class="overtake-driver">--</span>
+        <span class="overtake-detail">--</span>
+      </div>
+    </div>
+    <div class="incident-card" id="incident-card" style="display:none">
+      <div class="incident-tag">Incident</div>
+      <div class="incident-body">
+        <span class="incident-driver">--</span>
+        <span class="incident-detail">--</span>
+      </div>
+    </div>
+
+    <!-- ROW: Best Sectors + Pit Lane -->
+    <div class="card-pair">
+      <div class="best-sectors-card">
+        <div class="best-sectors-header">Best Sectors</div>
+        <div class="best-sector-row" id="best-s1">
+          <span class="best-sector-lbl">S1</span>
+          <span class="best-sector-driver">--</span>
+          <span class="best-sector-time s-purple">--</span>
+        </div>
+        <div class="best-sector-row" id="best-s2">
+          <span class="best-sector-lbl">S2</span>
+          <span class="best-sector-driver">--</span>
+          <span class="best-sector-time s-purple">--</span>
+        </div>
+        <div class="best-sector-row" id="best-s3">
+          <span class="best-sector-lbl">S3</span>
+          <span class="best-sector-driver">--</span>
+          <span class="best-sector-time s-purple">--</span>
+        </div>
+      </div>
+
+      <div class="pit-card">
+        <div class="pit-tag">Pit Lane</div>
+        <div class="pit-body">
+          <span class="pit-num">44</span>
+          <span class="pit-name">Hamilton</span>
+          <div class="pit-stop-time">
+            <div class="pit-stop-label">Stop</div>
+            <div class="pit-stop-val">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW: Fastest Lap + Laps Led -->
+    <div class="card-pair">
+      <div class="fastest-lap">
+        <div class="fl-accent"></div>
+        <div class="fl-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/><polyline points="12,6 12,12 16,14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+          Fastest Lap
+        </div>
+        <div class="fl-data">
+          <span class="fl-driver">--</span>
+          <span class="fl-time">--</span>
+        </div>
+      </div>
+
+      <div class="laps-led-card" id="laps-led-card">
+        <div class="laps-led-tag">Laps Led</div>
+        <div class="laps-led-body">
+          <span class="laps-led-driver">--</span>
+          <span class="laps-led-count">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW: Biggest Mover + Most Stops -->
+    <div class="card-pair">
+      <div class="biggest-mover-card" id="biggest-mover-card">
+        <div class="biggest-mover-tag">Biggest Mover</div>
+        <div class="biggest-mover-body">
+          <span class="biggest-mover-driver">--</span>
+          <span class="biggest-mover-delta">--</span>
+        </div>
+      </div>
+
+      <div class="most-stops-card" id="most-stops-card">
+        <div class="most-stops-tag">Most Stops</div>
+        <div class="most-stops-body">
+          <span class="most-stops-driver">--</span>
+          <span class="most-stops-count">--</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     BOTTOM TICKER
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="bottom-ticker">
+  <span class="ticker-brand">Sector Says What</span>
+  <div class="ticker-sep"></div>
+  <div class="ticker-scroll">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="tl">Leader</span> <span class="tv">HAM</span></span>
+      <span class="ticker-item"><span class="tl">Gap 1-2</span> <span class="tv">+7.547</span></span>
+      <span class="ticker-item"><span class="tl">Fastest Lap</span> <span class="tg">HAM 1:29.347</span></span>
+      <span class="ticker-item"><span class="tl">Pit Stops</span> <span class="tv">18 / 21 cars</span></span>
+      <span class="ticker-item"><span class="tl">Commentary</span> <span class="tv">47 lines</span></span>
+      <span class="ticker-item"><span class="tl">Focus Driver</span> <span class="tg">P14 (+6 from grid)</span></span>
+      <span class="ticker-item"><span class="tl">DOTD</span> <span class="tg">Stroll — 91 pts</span></span>
+      <span class="ticker-item"><span class="tl">Track Temp</span> <span class="tv">38°C</span></span>
+      <!-- Duplicate for seamless scroll -->
+      <span class="ticker-item"><span class="tl">Leader</span> <span class="tv">HAM</span></span>
+      <span class="ticker-item"><span class="tl">Gap 1-2</span> <span class="tv">+7.547</span></span>
+      <span class="ticker-item"><span class="tl">Fastest Lap</span> <span class="tg">HAM 1:29.347</span></span>
+      <span class="ticker-item"><span class="tl">Pit Stops</span> <span class="tv">18 / 21 cars</span></span>
+      <span class="ticker-item"><span class="tl">Commentary</span> <span class="tv">47 lines</span></span>
+      <span class="ticker-item"><span class="tl">Focus Driver</span> <span class="tg">P14 (+6 from grid)</span></span>
+      <span class="ticker-item"><span class="tl">DOTD</span> <span class="tg">Stroll — 91 pts</span></span>
+      <span class="ticker-item"><span class="tl">Track Temp</span> <span class="tv">38°C</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SETTINGS PANEL (Overlay — opens from gear icon)
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="settings-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="settings-panel">
+    <div class="settings-title">
+      HUD Settings
+      <button class="settings-close" onclick="document.querySelector('.settings-overlay').classList.remove('open')">&times;</button>
+    </div>
+    <div class="settings-note">
+      Most configuration lives in the <strong>Pit Wall Dashboard</strong> and syncs automatically.<br>
+      These are quick-access controls for the broadcast window.
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-label">Focus Driver</div>
+      <div class="settings-row">
+        <span class="settings-row-label">Focus Driver</span>
+        <select class="settings-select" id="hud-focus-driver">
+          <option value="">— Loading —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-label">Audio</div>
+      <div class="settings-row">
+        <span class="settings-row-label">Audio Output</span>
+        <select class="settings-select" id="hud-audio-output">
+          <option value="">— Loading —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-label">Commentary</div>
+      <div class="settings-row">
+        <span class="settings-row-label">TTS Enabled</span>
+        <div class="settings-toggle on" id="hud-tts" onclick="this.classList.toggle('on')">
+          <div class="settings-toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-label">Display</div>
+      <div class="settings-row">
+        <span class="settings-row-label">Show Commentary Feed</span>
+        <div class="settings-toggle on" id="hud-show-commentary" onclick="this.classList.toggle('on')">
+          <div class="settings-toggle-knob"></div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Show Battle Cards</span>
+        <div class="settings-toggle on" id="hud-show-battles" onclick="this.classList.toggle('on')">
+          <div class="settings-toggle-knob"></div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Show Timing Tower</span>
+        <div class="settings-toggle on" id="hud-show-tower" onclick="this.classList.toggle('on')">
+          <div class="settings-toggle-knob"></div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Show DOTD</span>
+        <div class="settings-toggle on" id="hud-show-dotd" onclick="this.classList.toggle('on')">
+          <div class="settings-toggle-knob"></div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Show Ticker</span>
+        <div class="settings-toggle on" id="hud-show-ticker" onclick="this.classList.toggle('on')">
+          <div class="settings-toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="settings-btn-save" onclick="_saveHudSettings()">Save & Close</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     BACKGROUND ROTATION SCRIPT
+     Loads HUD-tagged backgrounds from media library, crossfades every 30s
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+"use strict";
+
+// ── Background Rotation ──────────────────────────────────────────
+const bgA = document.getElementById("bg-a");
+const bgB = document.getElementById("bg-b");
+
+// Default fallback images (used if API not available in mockup)
+let hudBackgrounds = [
+  "backgrounds/open_track_day.png",
+  "backgrounds/grid_starting.png",
+  "backgrounds/pit_lane.png",
+  "backgrounds/fanzone.png"
+];
+
+let bgIndex = 0;
+let activeBg = "a"; // which layer is currently visible
+
+/* Preload an image before painting it. Returns a resolved promise once the
+ * image bytes are fully decoded, so the subsequent `backgroundImage` assign
+ * paints without a flash/bounce. Falls through on error so callers can set
+ * whatever URL they had; a missing decoded image beats a stuck UI.
+ *
+ * Uses in-memory cache (`_preloaded`) so repeat-URL swaps are instant. */
+const _preloaded = new Set();
+function preloadImage(url) {
+  if (!url) return Promise.resolve();
+  if (_preloaded.has(url)) return Promise.resolve();
+  return new Promise(resolve => {
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = img.onerror = () => { _preloaded.add(url); resolve(); };
+    img.src = url;
+    if (typeof img.decode === "function") {
+      img.decode().then(() => { _preloaded.add(url); resolve(); }).catch(() => {});
+    }
+  });
+}
+
+/* Swap an element's background-image after the new URL is fully loaded.
+ * The element's CSS opacity transition (if any) drives the visual fade —
+ * we don't touch opacity unless explicitly asked, so layers that are
+ * already showing stay up until the new image is ready to paint. */
+async function setBackgroundFrom(el, url) {
+  if (!el || !url) return;
+  await preloadImage(url);
+  el.style.backgroundImage = "url('" + url + "')";
+}
+
+async function loadHudBackgrounds() {
+  try {
+    const r = await fetch("/api/media/hud-backgrounds?t=" + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const data = await r.json();
+    if (data && data.backgrounds && data.backgrounds.length > 0) {
+      hudBackgrounds = data.backgrounds.map(
+        p => "/api/media/file?path=" + encodeURIComponent(p)
+      );
+    }
+  } catch (e) {
+    console.log("[BG] Using default backgrounds (API not available in mockup)");
+  }
+  // Set initial background — preload first so it appears fully decoded.
+  if (hudBackgrounds.length > 0 && bgA) {
+    await preloadImage(hudBackgrounds[0]);
+    bgA.style.backgroundImage = "url('" + hudBackgrounds[0] + "')";
+    bgA.style.opacity = "1";
+    bgIndex = 1;
+    // Warm the next one so the first rotation is instant.
+    if (hudBackgrounds.length > 1) preloadImage(hudBackgrounds[1]);
+  }
+}
+
+async function rotateBackground() {
+  if (hudBackgrounds.length === 0) return;
+  const nextUrl = hudBackgrounds[bgIndex % hudBackgrounds.length];
+  bgIndex++;
+  // Decode before assigning the layer. The inactive layer is already at
+  // opacity 0 so the paint is invisible until we fade it in below.
+  await preloadImage(nextUrl);
+  if (activeBg === "a") {
+    bgB.style.backgroundImage = "url('" + nextUrl + "')";
+    bgB.style.opacity = "1";
+    bgA.style.opacity = "0";
+    activeBg = "b";
+  } else {
+    bgA.style.backgroundImage = "url('" + nextUrl + "')";
+    bgA.style.opacity = "1";
+    bgB.style.opacity = "0";
+    activeBg = "a";
+  }
+  // Warm the NEXT rotation so the 30s timer hits a cached image.
+  const followUrl = hudBackgrounds[bgIndex % hudBackgrounds.length];
+  if (followUrl) preloadImage(followUrl);
+}
+
+loadHudBackgrounds();
+setInterval(rotateBackground, 30000); // Rotate every 30 seconds
+
+// ── Flag Glow References ─────────────────────────────────────────
+const flagGlow = document.querySelector(".flag-glow");
+const flagColors = ["green", "yellow", "red", "blue", "white", "safety-car", "checkered"];
+
+// ═══════════════════════════════════════════════════════════════════
+//  LIVE DATA POLLING — wires right column, center commentary, ticker
+// ═══════════════════════════════════════════════════════════════════
+
+const _t = () => Date.now();
+let _lastTriggerCount = -1;
+let _commentatorImages = {};
+
+async function _fetchJson(url) {
+  try {
+    const r = await fetch(url + "?t=" + _t());
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+function _fmtLap(secs) {
+  if (!secs || secs <= 0) return "--";
+  const m = Math.floor(secs / 60);
+  const s = (secs % 60).toFixed(3);
+  return m + ":" + s.padStart(6, "0");
+}
+
+// _fmtGap defined in the timing tower section below (handles minutes)
+
+function _lastName(name) {
+  if (!name) return "???";
+  const clean = _cleanName ? _cleanName(name) : name.replace(/\s*\[PIT\]\s*/gi, "").trim();
+  if (!clean) return "???";
+  const parts = clean.split(/\s+/);
+  return parts[parts.length - 1];
+}
+
+const _photoCache = {};  // keyed by clip_id or "commentator_location_idx"
+function _pickPhoto(commentator, location, cacheKey) {
+  if (cacheKey && _photoCache[cacheKey]) return _photoCache[cacheKey];
+  const c = _commentatorImages[commentator];
+  if (!c) {
+    const fallback = "commentators/" + (commentator || "murray").toLowerCase() + "_default.png";
+    if (cacheKey) _photoCache[cacheKey] = fallback;
+    return fallback;
+  }
+  // Match location case-insensitively, trying common variations
+  const loc = (location || "Studio").toLowerCase();
+  const locKeys = Object.keys(c);
+  let candidates = [];
+  // Exact case-insensitive match first
+  for (const k of locKeys) {
+    if (k.toLowerCase() === loc) { candidates = c[k]; break; }
+  }
+  // Try partial match (e.g. "Pit Lane" matches "Pitlane" or "PitLane")
+  if (!candidates.length) {
+    const locNorm = loc.replace(/[\s_-]/g, "");
+    for (const k of locKeys) {
+      if (k.toLowerCase().replace(/[\s_-]/g, "") === locNorm) { candidates = c[k]; break; }
+    }
+  }
+  // Fallback to Studio, then first available
+  if (!candidates.length) candidates = c["Studio"] || Object.values(c)[0] || [];
+  if (candidates.length === 0) {
+    const fallback = "commentators/" + commentator.toLowerCase() + "_default.png";
+    if (cacheKey) _photoCache[cacheKey] = fallback;
+    return fallback;
+  }
+  const pick = "commentators/" + candidates[Math.floor(Math.random() * candidates.length)];
+  if (cacheKey) _photoCache[cacheKey] = pick;
+  return pick;
+}
+
+// --- Fastest Lap Card ---
+function _updateFastestLap(cars) {
+  const el = document.querySelector(".fastest-lap");
+  if (!el || !cars || !cars.length) return;
+  let best = null;
+  for (const c of cars) {
+    if (c.Best && c.Best > 0 && (!best || c.Best < best.Best)) best = c;
+  }
+  if (!best) { el.style.display = "none"; return; }
+  el.style.display = "flex";
+  const driver = el.querySelector(".fl-driver");
+  const time = el.querySelector(".fl-time");
+  if (driver) driver.textContent = _lastName(best.Name);
+  if (time) time.textContent = _fmtLap(best.Best);
+}
+
+// --- Battle Card ---
+function _updateBattleCard(cars) {
+  const el = document.querySelector(".battle-card");
+  if (!el || !cars || cars.length < 3) return;
+  // Find closest battle in top 10
+  let minGap = 999, bIdx = -1;
+  for (let i = 1; i < Math.min(cars.length, 15); i++) {
+    const gap = cars[i].GapAhead || 0;
+    if (gap > 0 && gap < minGap) { minGap = gap; bIdx = i; }
+  }
+  if (bIdx < 1 || minGap > 2.0) { el.style.display = "none"; return; }
+  el.style.display = "block";
+  const ahead = cars[bIdx - 1];
+  const behind = cars[bIdx];
+  const pos = behind.LivePos || (bIdx + 1);
+  el.querySelector(".battle-label").textContent = "Battle for P" + (pos - 1);
+  el.querySelector(".battle-gap-val").textContent = _fmtGap(minGap);
+  const drivers = el.querySelectorAll(".battle-driver");
+  if (drivers[0]) {
+    drivers[0].querySelector(".battle-pos-bg").textContent = pos - 1;
+    drivers[0].querySelector(".battle-d-name").textContent = _lastName(ahead.Name);
+    drivers[0].querySelector(".battle-d-team").textContent = "#" + ahead.CarNumber;
+  }
+  if (drivers[1]) {
+    drivers[1].querySelector(".battle-pos-bg").textContent = pos;
+    drivers[1].querySelector(".battle-d-name").textContent = _lastName(behind.Name);
+    drivers[1].querySelector(".battle-d-team").textContent = "#" + behind.CarNumber;
+  }
+}
+
+// --- Pit Card ---
+// Renders every car currently on pit road as its own row. Replaces the
+// old single-primary layout that hid the 2nd/3rd pitting cars behind a
+// comma-joined string.
+function _updatePitCard(cars) {
+  const el = document.querySelector(".pit-card");
+  if (!el || !cars) return;
+  const pitting = cars.filter(c => c.TrackSurface === 1 || c.OnPitRoad);
+  if (!pitting.length) { el.style.display = "none"; return; }
+  el.style.display = "";
+
+  // Sort by race position so the tower reads P1 → Pn
+  pitting.sort((a, b) => (a.LivePos || 999) - (b.LivePos || 999));
+
+  const tag = el.querySelector(".pit-tag");
+  if (tag) tag.textContent = pitting.length > 1 ? `Pit Lane · ${pitting.length} in pits` : "Pit Lane";
+
+  // Rebuild body as a stacked row-per-car list
+  let body = el.querySelector(".pit-body");
+  if (!body) {
+    body = document.createElement("div");
+    body.className = "pit-body";
+    el.appendChild(body);
+  }
+  body.classList.toggle("pit-body-multi", pitting.length > 1);
+  body.innerHTML = pitting.map(c => {
+    const dur = c.LastPitDuration;
+    const durStr = (dur && dur > 0) ? dur.toFixed(1) + "s" : "—";
+    const stopIdx = c.PitStops > 0 ? ("#" + c.PitStops) : "";
+    return `
+      <div class="pit-row">
+        <span class="pit-num">${c.CarNumber || ""}</span>
+        <span class="pit-name">${_lastName(c.Name)}</span>
+        <span class="pit-stop-meta">${stopIdx ? `<b>Stop ${stopIdx}</b>` : "<b>Stop</b>"} · ${durStr}</span>
+      </div>`;
+  }).join("");
+}
+
+// --- Best Sectors (purple sector holders) ---
+function _updateBestSectors(cars) {
+  if (!cars || !cars.length) return;
+  const fields = ["S1", "S2", "S3"];
+  const ids = ["best-s1", "best-s2", "best-s3"];
+  fields.forEach((key, i) => {
+    const row = document.getElementById(ids[i]);
+    if (!row) return;
+    let best = null;
+    for (const c of cars) {
+      const v = parseFloat(c[key]);
+      if (v > 0 && (!best || v < best.val)) best = { val: v, name: c.Name };
+    }
+    const driverEl = row.querySelector(".best-sector-driver");
+    const timeEl = row.querySelector(".best-sector-time");
+    if (best) {
+      driverEl.textContent = _lastName(best.name);
+      timeEl.textContent = best.val.toFixed(3);
+    } else {
+      driverEl.textContent = "--";
+      timeEl.textContent = "--";
+    }
+  });
+}
+
+// --- Laps Led ---
+function _updateLapsLed(cars) {
+  const el = document.getElementById("laps-led-card");
+  if (!el || !cars || !cars.length) return;
+  let leader = null;
+  for (const c of cars) {
+    const ll = c.LapsLed || 0;
+    if (ll > 0 && (!leader || ll > leader.laps)) leader = { laps: ll, name: c.Name };
+  }
+  el.querySelector(".laps-led-driver").textContent = leader ? _lastName(leader.name) : "--";
+  el.querySelector(".laps-led-count").textContent = leader ? leader.laps : "--";
+}
+
+// --- Biggest Mover ---
+function _updateBiggestMover(cars) {
+  const el = document.getElementById("biggest-mover-card");
+  if (!el || !cars || !cars.length) return;
+  let best = null;
+  for (const c of cars) {
+    const delta = c["\u0394Pos"] || 0;
+    if (delta > 0 && (!best || delta > best.delta))
+      best = { delta, name: c.Name, pos: c.LivePos };
+  }
+  el.querySelector(".biggest-mover-driver").textContent = best ? _lastName(best.name) : "--";
+  el.querySelector(".biggest-mover-delta").textContent = best ? "+" + best.delta : "--";
+}
+
+// --- Most Stops ---
+function _updateMostStops(cars) {
+  const el = document.getElementById("most-stops-card");
+  if (!el || !cars || !cars.length) return;
+  let top = null;
+  for (const c of cars) {
+    const stops = c.PitStops || 0;
+    if (!top || stops > top.stops)
+      top = { stops, name: c.Name };
+  }
+  el.querySelector(".most-stops-driver").textContent = top ? _lastName(top.name) : "--";
+  el.querySelector(".most-stops-count").textContent = top ? top.stops : "0";
+}
+
+// --- Overtake Flash Card ---
+// trigger_name values from race_triggers.py: "Overtake Alert", "Lead Change"
+const _OVERTAKE_TYPES = ["Overtake Alert", "Lead Change", "Overtake", "overtake", "LeadChange", "leader_change"];
+let _lastOvertakeTs = null;
+let _overtakeTimer = null;
+function _updateOvertakeCard(events) {
+  const el = document.getElementById("overtake-card");
+  if (!el || !events || !events.length) return;
+  // Find the most recent overtake event
+  let latest = null;
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    if (_OVERTAKE_TYPES.includes(e.type) || _OVERTAKE_TYPES.includes(e.trigger_type)) { latest = e; break; }
+  }
+  if (!latest || latest.ts === _lastOvertakeTs) return;
+  _lastOvertakeTs = latest.ts;
+  // Show card
+  el.style.display = "flex";
+  el.classList.remove("flash-in");
+  void el.offsetWidth; // force reflow for re-animation
+  el.classList.add("flash-in");
+  const isLead = (latest.type === "Lead Change" || latest.type === "LeadChange" || latest.type === "leader_change");
+  el.querySelector(".overtake-tag").textContent = isLead ? "Lead Change" : "Overtake";
+  el.querySelector(".overtake-driver").textContent = latest.short || _lastName(latest.desc);
+  el.querySelector(".overtake-detail").textContent = latest.commentator || "";
+  // Auto-hide after 8 seconds
+  if (_overtakeTimer) clearTimeout(_overtakeTimer);
+  _overtakeTimer = setTimeout(() => {
+    el.style.display = "none";
+    el.classList.remove("flash-in");
+  }, 8000);
+}
+
+// --- Incident Alert Card ---
+// trigger_name values from commentary_team: "incident", "recovery", "multi_offtrack"
+// Also match config names in case engine sends those directly
+const _INCIDENT_TYPES = ["incident", "recovery", "multi_offtrack", "collision_event", "off_track", "spinning-off_track", "towed_car"];
+let _lastIncidentTs = null;
+let _incidentTimer = null;
+function _updateIncidentCard(events) {
+  const el = document.getElementById("incident-card");
+  if (!el || !events || !events.length) return;
+  // Find the most recent incident event
+  let latest = null;
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (_INCIDENT_TYPES.includes(events[i].type)) { latest = events[i]; break; }
+  }
+  if (!latest || latest.ts === _lastIncidentTs) return;
+  _lastIncidentTs = latest.ts;
+  // Show card with incident-appropriate label
+  el.style.display = "flex";
+  el.classList.remove("flash-in");
+  void el.offsetWidth;
+  el.classList.add("flash-in");
+  const labels = {
+    "incident": "Incident",
+    "collision_event": "Collision",
+    "off_track": "Off Track",
+    "spinning-off_track": "Spin",
+    "towed_car": "Towed",
+    "recovery": "Recovery",
+    "multi_offtrack": "Multi Off-Track",
+  };
+  el.querySelector(".incident-tag").textContent = labels[latest.type] || "Incident";
+  el.querySelector(".incident-driver").textContent = latest.short || _lastName(latest.desc);
+  el.querySelector(".incident-detail").textContent = latest.commentator || "";
+  // Auto-hide after 8 seconds
+  if (_incidentTimer) clearTimeout(_incidentTimer);
+  _incidentTimer = setTimeout(() => {
+    el.style.display = "none";
+    el.classList.remove("flash-in");
+  }, 8000);
+}
+
+// --- Flag System (full-screen glow + background takeover) ---
+const _flagBits = {
+  CHECKERED: 0x01, WHITE: 0x02, GREEN: 0x04, YELLOW: 0x08,
+  RED: 0x10, BLUE: 0x20, DEBRIS: 0x40, CAUTION: 0x4000,
+  CAUTION_WAVING: 0x8000, ONE_TO_GREEN: 0x80000
+};
+let _currentFlag = "none";
+let _greenTimer = null;
+const _raceBg = document.getElementById("race-bg");
+
+function _updateFlagCard(broadcast) {
+  if (!broadcast) return;
+  const flags = broadcast.flags || 0;
+
+  let newFlag = "none";
+  if (flags & _flagBits.YELLOW || flags & _flagBits.CAUTION || flags & _flagBits.CAUTION_WAVING) {
+    newFlag = "yellow";
+  } else if (flags & _flagBits.RED) {
+    newFlag = "red";
+  } else if (flags & _flagBits.CHECKERED) {
+    newFlag = "checkered";
+  } else if (flags & _flagBits.WHITE) {
+    newFlag = "white";
+  } else if (flags & _flagBits.GREEN) {
+    newFlag = "green";
+  }
+
+  // No change — skip to avoid re-triggering animations
+  if (newFlag === _currentFlag) return;
+  _currentFlag = newFlag;
+
+  // Clear any pending green auto-dismiss
+  if (_greenTimer) { clearTimeout(_greenTimer); _greenTimer = null; }
+
+  // Reset glow
+  flagGlow.classList.remove(...flagColors, "active");
+
+  if (newFlag === "none") {
+    // Clear — restore rotating photo background
+    if (_raceBg) _raceBg.classList.remove("flag-bg-active", "flag-bg-yellow", "flag-bg-red", "flag-bg-green", "flag-bg-white", "flag-bg-checkered");
+    return;
+  }
+
+  // Activate glow
+  flagGlow.classList.add(newFlag, "active");
+
+  // Swap background to flag material
+  if (_raceBg) {
+    _raceBg.classList.remove("flag-bg-yellow", "flag-bg-red", "flag-bg-green", "flag-bg-white", "flag-bg-checkered");
+    _raceBg.classList.add("flag-bg-active", "flag-bg-" + newFlag);
+  }
+
+  // Green flag: auto-clear after 6 seconds back to normal
+  if (newFlag === "green") {
+    _greenTimer = setTimeout(() => {
+      _currentFlag = "none";
+      flagGlow.classList.remove(...flagColors, "active");
+      if (_raceBg) _raceBg.classList.remove("flag-bg-active", "flag-bg-green");
+    }, 6000);
+  }
+}
+
+// --- Q1 Lead Commentator (shown in standby) ---
+let _q1Host = null;
+let _q1HostLocation = "Studio";
+let _q1PhotoIdx = 0;
+let _q1PhotoTimer = null;
+(async function _loadQ1Host() {
+  try {
+    const cfg = await _fetchJson("/api/config");
+    const ct = cfg && cfg.commentary_team;
+    if (ct) {
+      const rot = ct.host_rotation_quarters || [];
+      _q1Host = rot[0] || "Sienna";
+      const casters = ct.commentators || {};
+      _q1HostLocation = (casters[_q1Host] && casters[_q1Host].location) || "Studio";
+    }
+  } catch (_) {}
+})();
+
+function _q1RotatingPhoto() {
+  // Returns a different photo each call for the Q1 host
+  if (!_q1Host) return "commentators/sienna_default.png";
+  // Use _pickPhoto with a rotating key so we get variety
+  _q1PhotoIdx++;
+  return _pickPhoto(_q1Host, _q1HostLocation, null); // null key = no cache, random each time
+}
+
+// --- Commentary Feed (center column) ---
+function _updateCommentary(events) {
+  // Empty state — show Q1 lead commentator in standby
+  if (!events || events.length === 0) {
+    const activeEl = document.querySelector(".commentary-active");
+    if (activeEl) {
+      const photo = activeEl.querySelector(".active-bg-photo");
+      const type = activeEl.querySelector(".active-type");
+      const who = activeEl.querySelector(".active-commentator");
+      const where = activeEl.querySelector(".active-location");
+      const text = activeEl.querySelector(".active-text");
+      const hostName = _q1Host || "Sienna";
+      if (photo) setBackgroundFrom(photo, _q1RotatingPhoto());
+      if (type) type.textContent = "Awaiting Commentary";
+      if (who) who.textContent = hostName;
+      if (where) where.textContent = _q1HostLocation;
+      if (text) text.innerHTML = '<span style="opacity:0.5">Commentary will appear here once the race is underway.</span>';
+      // Rotate the photo every 10 seconds while in standby (preloaded).
+      if (!_q1PhotoTimer) {
+        _q1PhotoTimer = setInterval(() => {
+          const p = document.querySelector(".commentary-active .active-bg-photo");
+          if (p) setBackgroundFrom(p, _q1RotatingPhoto());
+        }, 10000);
+      }
+    }
+    const historyEl = document.querySelector(".commentary-history");
+    if (historyEl) historyEl.innerHTML = "";
+    return;
+  }
+  // Stop rotating once real commentary arrives
+  if (_q1PhotoTimer) { clearInterval(_q1PhotoTimer); _q1PhotoTimer = null; }
+  // Latest event = active commentary
+  const latest = events[events.length - 1];
+  const activeEl = document.querySelector(".commentary-active");
+  if (activeEl) {
+    const photo = activeEl.querySelector(".active-bg-photo");
+    const type = activeEl.querySelector(".active-type");
+    const who = activeEl.querySelector(".active-commentator");
+    const where = activeEl.querySelector(".active-location");
+    const text = activeEl.querySelector(".active-text");
+    if (photo) setBackgroundFrom(photo, _pickPhoto(latest.commentator, latest.location, latest.clip_id || ("active_" + latest.ts)));
+    if (type) type.textContent = latest.type || "Commentary";
+    if (who) who.textContent = latest.commentator || "Murray";
+    if (where) where.textContent = latest.location || "Studio";
+    if (text) text.innerHTML = '"' + (latest.desc || "").replace(/\n/g, "<br>") + '"';
+  }
+
+  // History = previous events (newest first, skip the active one)
+  const historyEl = document.querySelector(".commentary-history");
+  if (!historyEl) return;
+  const history = events.slice(0, -1).reverse().slice(0, 6);
+  historyEl.innerHTML = "";
+  for (const ev of history) {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <div class="history-photo" style="background-image: url('${_pickPhoto(ev.commentator, ev.location, ev.clip_id || ("hist_" + ev.ts))}');"></div>
+      <div class="history-body">
+        <div class="history-meta">
+          <span class="history-type">${ev.type || ""}</span>
+          <span class="history-who">${ev.commentator || ""}</span>
+          <span class="history-where">${ev.location || ""}</span>
+        </div>
+        <div class="history-text">${ev.desc || ""}</div>
+      </div>`;
+    historyEl.appendChild(div);
+  }
+}
+
+// --- Finish Cards (podium + DOTD in commentary feed) ---
+let _finishCardsInjected = false;
+
+async function _injectFinishCards(cars, dotd) {
+  if (_finishCardsInjected) return;
+  const historyEl = document.querySelector(".commentary-history");
+  if (!historyEl || !cars || cars.length < 3) return;
+
+  _finishCardsInjected = true;
+
+  // Sort by final position
+  const sorted = cars.slice()
+    .filter(c => Number.isFinite(c.LivePos) && c.LivePos > 0)
+    .sort((a, b) => a.LivePos - b.LivePos);
+  const top3 = sorted.slice(0, 3);
+
+  // Collect every URL used inside the card HTML so we can decode them all
+  // in parallel before injecting — otherwise the podium flashes in with
+  // blank tiles that swap to photos a beat later.
+  const urls = [];
+  const podiumParts = top3.map((c, i) => {
+    const pos = i + 1;
+    const prof = _driverProfiles[String(c.CarIdx)];
+    const color = (prof && prof.color_hex) || "#555";
+    const img = _getDriverImage(c.CarIdx, c.Name);
+    urls.push(img);
+    return { pos, color, img, name: _lastName(c.Name) };
+  });
+
+  let dotdBits = null;
+  if (dotd && dotd.top3 && dotd.top3.length > 0) {
+    const d1 = dotd.top3[0];
+    const dColor = _getDriverColor(d1.driver_id);
+    const dImg = _getDriverImage(d1.driver_id, d1.name);
+    urls.push(dImg);
+    dotdBits = {
+      color: dColor,
+      img: dImg,
+      name: _lastName(d1.name),
+      pct: (d1.percent || 0).toFixed(1),
+    };
+  }
+
+  await Promise.all(urls.map(preloadImage));
+
+  let podiumHtml = '<div class="finish-podium-card"><div class="finish-podium-row">';
+  podiumParts.forEach(p => {
+    podiumHtml += `
+      <div class="finish-podium-block fp-${p.pos}">
+        <div class="fp-pos-label">${p.pos}</div>
+        <div class="fp-photo" style="background-image: url('${p.img}');"></div>
+        <div class="fp-info" style="--driver-color:${p.color}">
+          <div class="fp-name">${p.name}</div>
+        </div>
+      </div>`;
+  });
+  podiumHtml += '</div></div>';
+
+  let dotdHtml = '';
+  if (dotdBits) {
+    dotdHtml = `
+      <div class="finish-dotd-card" style="--hero-team-color:${dotdBits.color}">
+        <div class="finish-dotd-photo" style="background-image: url('${dotdBits.img}');"></div>
+        <div class="finish-dotd-body" style="--hero-team-color:${dotdBits.color}">
+          <div class="finish-dotd-text">
+            <div class="finish-dotd-tag">Driver of the Day</div>
+            <div class="finish-dotd-name">${dotdBits.name}</div>
+          </div>
+          <div class="finish-dotd-score">
+            <div class="finish-dotd-pts">${dotdBits.pct}</div>
+            <div class="finish-dotd-unit">% of vote</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const activeEl = document.querySelector(".commentary-active");
+  if (activeEl) {
+    activeEl.classList.add("finish-mode");
+    activeEl.innerHTML = podiumHtml;
+  }
+
+  if (dotdHtml) {
+    const container = document.createElement("div");
+    container.innerHTML = dotdHtml;
+    historyEl.prepend(container);
+  }
+}
+
+// --- Ticker ---
+function _updateTicker(cars, broadcast, events, dotd) {
+  const track = document.querySelector(".ticker-track");
+  if (!track) return;
+  const items = [];
+  if (cars && cars.length) {
+    items.push(`<span class="tl">Leader</span> <span class="tv">${_lastName(cars[0].Name)}</span>`);
+    if (cars.length > 1 && cars[1].GapToLeader > 0)
+      items.push(`<span class="tl">Gap 1-2</span> <span class="tv">${_fmtGap(cars[1].GapToLeader)}</span>`);
+    // Fastest lap
+    let best = null;
+    for (const c of cars) { if (c.Best > 0 && (!best || c.Best < best.Best)) best = c; }
+    if (best) items.push(`<span class="tl">Fastest Lap</span> <span class="tg">${_lastName(best.Name)} ${_fmtLap(best.Best)}</span>`);
+    // Pit count
+    const pitting = cars.filter(c => c.TrackSurface === 1).length;
+    items.push(`<span class="tl">On Track</span> <span class="tv">${cars.length - pitting} / ${cars.length}</span>`);
+    // Owner
+    const owner = cars.find(c => c.Owner);
+    if (owner) {
+      const delta = owner["\u0394Pos"] || 0;
+      const deltaStr = delta > 0 ? " (+" + delta + ")" : delta < 0 ? " (" + delta + ")" : "";
+      items.push(`<span class="tl">Focus Driver</span> <span class="tg">P${owner.LivePos}${deltaStr}</span>`);
+    }
+  }
+  if (events && events.length)
+    items.push(`<span class="tl">Commentary</span> <span class="tv">${events.length} lines</span>`);
+  if (broadcast)
+    items.push(`<span class="tl">Lap</span> <span class="tv">${broadcast.lap || "?"}</span>`);
+  if (dotd && dotd.top3 && dotd.top3.length)
+    items.push(`<span class="tl">DOTD</span> <span class="tg">${dotd.top3[0].name} ${(dotd.top3[0].percent || 0).toFixed(1)}%</span>`);
+
+  // Duplicate for seamless scroll
+  const html = items.map(i => '<span class="ticker-item">' + i + '</span>').join("");
+  track.innerHTML = html + html;
+}
+
+// --- DOTD Hero Card ---
+let _driverProfiles = {};
+let _focusDriverIdx = null;
+let _focusDriverCustId = null;
+let _dotdPrevLeader = null;
+
+function _updateDOTD(dotd) {
+  const section = document.querySelector(".dotd-section");
+  const hero = document.getElementById("dotd-hero");
+  const hasData = dotd && dotd.top3 && dotd.top3.length > 0;
+  if (section) section.style.display = hasData ? "" : "none";
+  if (!hasData || !hero) return;
+
+  const d1 = dotd.top3[0];
+  if (!d1.name || !d1.driver_id) return; // skip corrupt/empty data
+  const leaderPct = d1.percent || 0;
+  const heroColor = _getDriverColor(d1.driver_id);
+
+  // Hero: vote-share percent (mirrors broadcast convention)
+  const ptsEl = hero.querySelector(".dotd-hero-pts");
+  if (ptsEl) ptsEl.textContent = leaderPct.toFixed(1);
+
+  // Hero: name + team color
+  hero.querySelector(".dotd-hero-name").textContent = _lastName(d1.name);
+  const heroBar = hero.querySelector(".dotd-hero-color-bar");
+  if (heroBar) heroBar.style.background = heroColor;
+
+  // Race position
+  const posEl = hero.querySelector(".dotd-hero-pos");
+  if (posEl && d1.pos) posEl.textContent = "Racing P" + d1.pos;
+
+  // Team color accents — CSS owns the gradient; we just feed the color
+  hero.style.setProperty("--hero-team-color", heroColor);
+  hero.style.background = "";  // clear any legacy inline gradient
+
+  // Hero: driver photo — preload, then crossfade on leader change so the
+  // fade doesn't reveal a half-decoded frame.
+  const heroPhoto = hero.querySelector(".dotd-hero-photo");
+  if (heroPhoto) {
+    const img = _getDriverImage(d1.driver_id, d1.name);
+    const newLeaderName = d1.name;
+    if (_dotdPrevLeader !== newLeaderName) {
+      heroPhoto.style.transition = "none";
+      heroPhoto.style.opacity = "0";
+      void heroPhoto.offsetWidth;
+      preloadImage(img).then(() => {
+        heroPhoto.style.backgroundImage = "url('" + img + "')";
+        heroPhoto.style.transition = "opacity 0.8s ease-in-out";
+        requestAnimationFrame(function() { heroPhoto.style.opacity = "1"; });
+      });
+      // Gold flash on lead change
+      if (_dotdPrevLeader !== null) {
+        hero.classList.remove("hero-flash");
+        void hero.offsetWidth;
+        hero.classList.add("hero-flash");
+      }
+      _dotdPrevLeader = newLeaderName;
+    } else {
+      setBackgroundFrom(heroPhoto, img);
+    }
+  }
+
+  // Runners — vote-share percent + fill bar
+  const runners = document.querySelectorAll(".dotd-runner");
+  for (let i = 0; i < runners.length && i + 1 < dotd.top3.length; i++) {
+    const d = dotd.top3[i + 1];
+    const dPct = d.percent || 0;
+    const rColor = _getDriverColor(d.driver_id);
+
+    const gapEl = runners[i].querySelector(".dotd-runner-gap");
+    if (gapEl) gapEl.textContent = dPct.toFixed(1) + "%";
+
+    runners[i].querySelector(".dotd-runner-name").textContent = _lastName(d.name);
+
+    const rBar = runners[i].querySelector(".dotd-runner-color-bar");
+    if (rBar) rBar.style.background = rColor;
+
+    // Fill bar proportional to leader's percent
+    const fill = runners[i].querySelector(".dotd-runner-bar-fill");
+    if (fill && leaderPct > 0) {
+      fill.style.width = (dPct / leaderPct * 100) + "%";
+      fill.style.background = rColor;
+    }
+
+    // Feed the team color into the runner card; the CSS background
+    // gradient uses var(--runner-team-color) directly.
+    runners[i].style.setProperty("--runner-team-color", rColor);
+    runners[i].style.background = "";  // clear any legacy inline gradient
+  }
+}
+
+function _getDriverColor(driverId) {
+  const p = _driverProfiles[String(driverId)];
+  return (p && p.color_hex) ? p.color_hex : "#555";
+}
+
+let _driverImages = {};
+const _DOTD_DEFAULT_IMAGE = "backgrounds/sector_says_what_logo_alternate.png";
+function _getDriverImage(driverId, name) {
+  // 0. Real iRacing member portrait (warmer-fetched, served by iRacing CDN)
+  const prof = _driverProfiles[String(driverId)];
+  if (prof && prof.iracing_image_url)
+    return prof.iracing_image_url;
+  // 1. Driver profile image (set via Pit Wall driver profiles)
+  if (prof && prof.profile_image) {
+    // profile_image may be stored as full path "python/sector_says_oversee/drivers/..."
+    // — strip to just "drivers/..." for the web server
+    let img = prof.profile_image;
+    const prefix = "python/sector_says_oversee/";
+    if (img.startsWith(prefix)) img = img.substring(prefix.length);
+    return img;
+  }
+  // 2. driver_images.json — keyed by display name
+  if (name && _driverImages) {
+    // Try full name first, then last name
+    const di = _driverImages[name] || _driverImages[_lastName(name)];
+    if (di) {
+      const imgPath = Array.isArray(di) ? di[0] : di;
+      return imgPath;
+    }
+  }
+  // 3. Default headshot
+  return _DOTD_DEFAULT_IMAGE;
+}
+
+// (Speed Trap card removed — no real telemetry source for it)
+
+// ── Timing Tower (live) ─────────────────────────────────────────
+let _prevLivePositions = {}; // { CarIdx: LivePos } — for flash detection
+
+function _cleanName(name) {
+  // Strip [PIT] or similar tags that iRacing/engine may append
+  if (!name) return "";
+  return String(name).replace(/\s*\[PIT\]\s*/gi, "").replace(/\s*\[OUT\]\s*/gi, "").trim();
+}
+function _abbrev(name) {
+  const clean = _cleanName(name);
+  if (!clean) return "---";
+  const parts = clean.split(/\s+/);
+  const last = parts[parts.length - 1] || parts[0] || "";
+  return last.substring(0, 3).toUpperCase();
+}
+function _fmtGap(g) {
+  if (g == null || isNaN(g)) return "—";
+  if (g <= 0) return "+0.000";
+  if (g >= 60) {
+    const m = Math.floor(g / 60);
+    const s = (g - m * 60).toFixed(1);
+    return `+${m}:${s.padStart(4, "0")}`;
+  }
+  return `+${g.toFixed(3)}`;
+}
+function _updateTimingTower(cars, profiles, broadcast) {
+  const tower = document.querySelector(".timing-tower");
+  if (!tower || !cars) return;
+
+  // Filter & sort by LivePos
+  const valid = cars
+    .filter(c => Number.isFinite(c.LivePos) && c.LivePos > 0 && c.LivePos < 200)
+    .sort((a, b) => a.LivePos - b.LivePos);
+
+  const top = valid.slice(0, 10);
+  // Resolve the focus driver. Prefer CustId match (stable across
+  // iRacing sessions) over CarIdx match (which can be stale from a
+  // previous race). Fall back to the Owner flag last.
+  let focus = null;
+  if (_focusDriverCustId != null) {
+    focus = valid.find(c => c.CustId === _focusDriverCustId);
+  }
+  if (!focus && _focusDriverIdx !== null) {
+    focus = valid.find(c => c.CarIdx === _focusDriverIdx);
+  }
+  if (!focus) focus = valid.find(c => c.Owner === true);
+  const focusOutside = focus && focus.LivePos > 10 ? focus : null;
+
+  // Build grid delta HTML — uses ΔPos from live_leaderboard.py (grid - current)
+  const _deltaHtml = (c) => {
+    const delta = c["\u0394Pos"]; // ΔPos field
+    if (delta == null || isNaN(delta)) return '<div class="tower-delta even"><span class="d-num">—</span></div>';
+    if (delta > 0) {
+      return `<div class="tower-delta gained"><span class="d-car">▲</span><span class="d-num">${delta}</span></div>`;
+    } else if (delta < 0) {
+      return `<div class="tower-delta lost"><span class="d-num">${Math.abs(delta)}</span><span class="d-car">▼</span></div>`;
+    }
+    return '<div class="tower-delta even"><span class="d-num">0</span></div>';
+  };
+
+  const rowHtml = (c, extraClass = "", isLeader = false) => {
+    const prof = profiles && profiles[String(c.CarIdx)];
+    const color = (prof && prof.color_hex) || "#666";
+    const name = _abbrev(c.Name);
+    const inPit = c.TrackSurface === 1 || c.TrackSurface === 2 || c.TrackSurface === 4 || c.OnPitRoad;
+    const pitChip = inPit ? `<span class="tower-pit-chip">PIT</span>` : "";
+
+    // Detect position flash
+    const prevPos = _prevLivePositions[c.CarIdx];
+    let flashCls = "";
+    if (prevPos !== undefined && prevPos !== c.LivePos) {
+      flashCls = c.LivePos < prevPos ? " pos-gained" : " pos-lost";
+    }
+
+    let gap;
+    if (isLeader) {
+      gap = `<div class="tower-gap leader">Leader</div>`;
+    } else if (inPit) {
+      gap = `<div class="tower-gap" style="color:#ffb84d">${_fmtGap(c.GapAhead)}</div>`;
+    } else {
+      gap = `<div class="tower-gap">${_fmtGap(c.GapAhead)}</div>`;
+    }
+    return `
+      <div class="tower-row${extraClass ? ' ' + extraClass : ''}${flashCls}">
+        <div class="tower-pos">${c.LivePos}</div>
+        <div class="tower-color" style="background:${color}"></div>
+        <div class="tower-name">${name}${pitChip}</div>
+        ${gap}
+        ${_deltaHtml(c)}
+      </div>`;
+  };
+
+  const _totRaw = broadcast?.total_laps || 0;
+  const _tot = (_totRaw > 0 && _totRaw < 1000) ? _totRaw : 0;
+  let html = `
+    <div class="tower-lap-header">
+      <span class="tower-lap-label">Lap</span>
+      <span class="tower-lap-nums">${
+        _tot
+          ? `${broadcast.lap || 0} <span class="lap-dim">/ ${_tot}</span>`
+          : (broadcast?.lap || 0)
+      }</span>
+    </div>
+  `;
+  html += top.map((c, i) => {
+    const isFocus = (focus && c.CarIdx === focus.CarIdx);
+    return rowHtml(c, isFocus ? "focus-driver" : "", i === 0);
+  }).join("");
+  if (focusOutside) {
+    html += `<div class="tower-sep"></div>`;
+    html += rowHtml(focusOutside, "focus-driver", false);
+  }
+  tower.innerHTML = html;
+
+  // Save current positions for next-frame flash detection
+  _prevLivePositions = {};
+  valid.forEach(c => { _prevLivePositions[c.CarIdx] = c.LivePos; });
+}
+
+// ── Standby Overlay ─────────────────────────────────────────────
+// Shown whenever the engine has no live iRacing feed. Prevents
+// last-race data from leaking onto the HUD on fresh startup.
+const _STANDBY_LABELS = {
+  idle:       "Offline",
+  connecting: "Connecting…",
+  pre_race:   "Session Ready",
+  racing:     "Live",
+  finished:   "Session Ended",
+};
+function _updateStandbyOverlay(status, isLive) {
+  const ov = document.getElementById("standby-overlay");
+  if (!ov) return;
+  ov.classList.toggle("hidden", !!isLive);
+  const label = document.getElementById("standby-engine-status");
+  if (label) label.textContent = _STANDBY_LABELS[status] || (status || "Offline");
+}
+
+// ── Sound Check Button ──────────────────────────────────────────
+// Visible pre-race (and between races — finished/idle/connecting) so
+// the producer can verify levels. Hidden once the race goes green to
+// prevent a stray click from talking over live commentary. Clicking
+// POSTs to the bridge endpoint; the engine polls the bridge file each
+// pre-green tick and enqueues a short welcome line from the lead
+// commentator. Shows the current audio output device so the producer
+// knows where the bits are actually going to land.
+function _updateSoundcheckVisibility(status) {
+  const btn = document.getElementById("soundcheck-btn");
+  if (!btn) return;
+  btn.style.display = (status === "racing") ? "none" : "";
+}
+async function _refreshSoundcheckDevice() {
+  const nameEl = document.getElementById("soundcheck-device");
+  if (!nameEl) return;
+  try {
+    // Hit the live endpoint, not the static export — the static file is
+    // only refreshed when the engine writes it, so it lags behind saves
+    // made from the Pit Wall until the next engine restart.
+    const resp = await fetch("/api/audio/devices?t=" + Date.now());
+    if (!resp.ok) throw new Error("status " + resp.status);
+    const data = await resp.json();
+    const idx = Number(data && data.audio_output_index);
+    const list = (data && data.AudioDevices) || [];
+    const match = list.find(d => Number(d.id) === idx);
+    if (match && match.name) {
+      nameEl.textContent = `#${idx} ${match.name}`;
+      nameEl.title = match.name;
+    } else {
+      nameEl.textContent = `#${isFinite(idx) ? idx : "?"} (not enumerated)`;
+    }
+  } catch (e) {
+    nameEl.textContent = "— device unknown —";
+  }
+}
+async function _triggerSoundcheck() {
+  const btn = document.getElementById("soundcheck-btn");
+  const labelEl = document.getElementById("soundcheck-label");
+  if (!btn || !labelEl) return;
+  // Allow rapid repeat presses — only lock for a brief window so the
+  // fetch doesn't race itself. The engine's own queue gate will drop
+  // clicks that arrive while a line is already playing.
+  if (btn.classList.contains("busy")) return;
+  const original = "Sound Check";
+  btn.classList.remove("ok", "err", "warn");
+  btn.classList.add("busy");
+  labelEl.textContent = "Sending…";
+  try {
+    const resp = await fetch("/api/broadcast/soundcheck", { method: "POST" });
+    const data = await resp.json().catch(() => ({}));
+    if (resp.ok && data && data.ok) {
+      btn.classList.add("ok");
+      labelEl.textContent = "Mic Hot — listening?";
+    } else if (resp.status === 409) {
+      btn.classList.add("warn");
+      labelEl.textContent = "Pre-Race Only";
+      console.warn("[soundcheck]", data);
+    } else {
+      btn.classList.add("err");
+      labelEl.textContent = "Failed";
+      console.warn("[soundcheck]", data);
+    }
+  } catch (e) {
+    btn.classList.add("err");
+    labelEl.textContent = "Network Error";
+    console.warn("[soundcheck] network error", e);
+  } finally {
+    setTimeout(() => {
+      btn.classList.remove("busy", "ok", "err", "warn");
+      labelEl.textContent = original;
+    }, 1500);
+  }
+}
+// Refresh device display on load and periodically (USB reorders happen).
+_refreshSoundcheckDevice();
+setInterval(_refreshSoundcheckDevice, 10000);
+
+// ── Masthead (circuit + weather) ────────────────────────────────
+function _mhText(id, value, suffix) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const raw = (value == null) ? "" : String(value).trim();
+  if (!raw || raw === "—" || raw === "?") {
+    el.textContent = "—";
+    return;
+  }
+  el.textContent = suffix ? `${raw}${suffix}` : raw;
+}
+function _mhTemp(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const raw = (value == null) ? "" : String(value).trim();
+  if (!raw || raw === "—" || raw === "?") { el.textContent = "—"; return; }
+  // Accept "22.78 C", "22 °C", "22", "38°C" — normalise to "23°C"
+  const m = raw.match(/-?\d+(\.\d+)?/);
+  el.textContent = m ? `${Math.round(parseFloat(m[0]))}°C` : raw;
+}
+function _mhHumid(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const raw = (value == null) ? "" : String(value).trim();
+  if (!raw || raw === "—" || raw === "?") { el.textContent = "—"; return; }
+  const m = raw.match(/-?\d+(\.\d+)?/);
+  el.textContent = m ? `${Math.round(parseFloat(m[0]))}%` : raw;
+}
+function _updateMasthead(session) {
+  if (!session) return;
+  _mhText("masthead-circuit", session.track_name);
+  _mhTemp("masthead-air",   session.air_temp);
+  _mhTemp("masthead-track", session.track_temp);
+  _mhHumid("masthead-humid", session.humidity);
+}
+
+// Sticky flag — once we've seen the engine produce a live race, keep
+// rendering the HUD even after the engine shuts down, so the final
+// standings stay visible until the user reloads the page.
+let _hasSeenLiveRace = false;
+
+// ── Data Cache ──────────────────────────────────────────────────
+// Every feed keeps its last good value.  If a fetch returns null
+// (file being written, transient error) we reuse the cached copy
+// instead of blanking the UI — eliminates flicker entirely.
+const _cache = {
+  broadcast: null,
+  leaderboard: null,
+  triggers: null,
+  dotd: null,
+  images: null,
+  profiles: null,
+  driverImgs: null,
+  fdotd: null,
+  session: null,
+};
+function _cached(key, fresh) {
+  if (fresh != null) _cache[key] = fresh;
+  return _cache[key];
+}
+
+// ── Main Poll Loop ──────────────────────────────────────────────
+async function _pollLiveData() {
+  // Check broadcast status first — skip data render while waiting for iRacing
+  const rawBroadcast = await _fetchJson("/api/broadcast/status");
+  const broadcast = _cached("broadcast", rawBroadcast);
+  const status = (broadcast && broadcast.status) || "idle";
+  const isLive = (status === "pre_race" || status === "racing" || status === "finished");
+  if (isLive) _hasSeenLiveRace = true;
+  // Render if engine is live OR if we've already seen a live race this
+  // session — keeps the final results on screen after engine exits.
+  const shouldRender = isLive || _hasSeenLiveRace;
+  _updateStandbyOverlay(status, shouldRender);
+  _updateSoundcheckVisibility(status);
+  if (!shouldRender) return;
+
+  const [rawLB, rawTrig, rawDotd, rawImg, rawProf, rawDI, rawFD, rawSess] = await Promise.all([
+    _fetchJson("/sector_said_exports/leaderboard.json"),
+    _fetchJson("/sector_said_exports/trigger_stream.json"),
+    _fetchJson("/sector_said_exports/dotd_top3.json"),
+    _fetchJson("/sector_said_exports/commentator_images.json"),
+    _fetchJson("/sector_said_exports/driver_profiles.json"),
+    _fetchJson("/sector_said_exports/driver_images.json"),
+    _fetchJson("/sector_said_exports/focus_driver_of_the_day.json"),
+    _fetchJson("/sector_said_exports/session_info.json"),
+  ]);
+
+  // Cache each feed — null fetches fall back to last good value
+  const leaderboard = _cached("leaderboard", rawLB);
+  const triggers    = _cached("triggers", rawTrig);
+  const dotd        = _cached("dotd", rawDotd);
+  const images      = _cached("images", rawImg);
+  const profiles    = _cached("profiles", rawProf);
+  const driverImgs  = _cached("driverImgs", rawDI);
+  const fdotd       = _cached("fdotd", rawFD);
+  const session     = _cached("session", rawSess);
+
+  if (images) _commentatorImages = images;
+  if (profiles) _driverProfiles = profiles;
+  if (driverImgs) _driverImages = driverImgs;
+  if (fdotd && fdotd.CarIdx != null) _focusDriverIdx = fdotd.CarIdx;
+  // CustId is stable across iRacing sessions; CarIdx is not. The tower
+  // and other panels prefer CustId so a stale CarIdx (carried over from
+  // a previous race) doesn't highlight the wrong row.
+  if (fdotd && fdotd.CustId != null) _focusDriverCustId = fdotd.CustId;
+
+  const cars = leaderboard?.cars || [];
+  const events = triggers?.events || [];
+
+  _updateMasthead(session);
+  _updateTimingTower(cars, _driverProfiles, broadcast);
+  _updateFastestLap(cars);
+  _updateBattleCard(cars);
+  _updatePitCard(cars);
+  _updateBestSectors(cars);
+  _updateLapsLed(cars);
+  _updateBiggestMover(cars);
+  _updateMostStops(cars);
+  _updateFlagCard(broadcast);
+  _updateOvertakeCard(events);
+  _updateIncidentCard(events);
+  _updateDOTD(dotd);
+  _updateTicker(cars, broadcast, events, dotd);
+
+  // Once the finish takeover is on screen, the podium + DOTD OWN the
+  // commentary area — skip the per-event commentary re-render, which
+  // otherwise wipes `.commentary-history` and takes the DOTD card with it.
+  if (status !== "finished" || !_finishCardsInjected) {
+    // Always run on first poll (to clear mockup placeholders), then only on count change
+    if (events.length !== _lastTriggerCount) {
+      _updateCommentary(events);
+      _lastTriggerCount = events.length;
+    }
+  }
+
+  // Inject podium + DOTD cards into commentary feed when race finishes
+  if (status === "finished") {
+    _injectFinishCards(cars, dotd);
+  }
+}
+
+// Restore persisted display preferences on page load
+(function _restoreDisplayPrefs() {
+  const displayMap = {
+    "hud-show-commentary": ".commentary-transcript",
+    "hud-show-battles": ".battle-card",
+    "hud-show-tower": ".timing-tower",
+    "hud-show-dotd": ".dotd-section",
+    "hud-show-ticker": ".ticker",
+  };
+  for (const [key, selector] of Object.entries(displayMap)) {
+    const stored = localStorage.getItem(key);
+    if (stored === "0") {
+      const el = document.querySelector(selector);
+      if (el) el.style.display = "none";
+    }
+  }
+})();
+
+// Initial load + poll every 1s
+_pollLiveData();
+setInterval(_pollLiveData, 1000);
+
+// ── HUD Settings Panel ─────────────────────────────────────────
+async function _openHudSettings() {
+  const overlay = document.querySelector('.settings-overlay');
+  overlay.classList.add('open');
+
+  // Populate Focus Driver dropdown from live leaderboard
+  const fdSel = document.getElementById("hud-focus-driver");
+  try {
+    const [lb, fdotd] = await Promise.all([
+      _fetchJson("/sector_said_exports/leaderboard.json"),
+      _fetchJson("/sector_said_exports/focus_driver_of_the_day.json"),
+    ]);
+    const cars = (lb && lb.cars) || [];
+    const currentIdx = (fdotd && fdotd.CarIdx != null) ? fdotd.CarIdx : null;
+    const currentCustId = (fdotd && fdotd.CustId != null) ? fdotd.CustId : null;
+    fdSel.innerHTML = '<option value="">— Not set —</option>';
+    cars
+      .filter(c => c.Name && !c.Name.startsWith("Pace Car"))
+      .sort((a, b) => (a.LivePos || 999) - (b.LivePos || 999))
+      .forEach(c => {
+        const name = c.Name.replace(/\s*\[PIT\]/, "").trim();
+        const opt = document.createElement("option");
+        opt.value = c.CarIdx;
+        opt.dataset.name = name;
+        opt.dataset.custId = c.CustId || "";
+        opt.dataset.carNumber = c.CarNumber || "";
+        opt.textContent = `P${c.LivePos || "?"} ${name} — #${c.CarNumber || "?"}`;
+        // Pre-select by CustId (stable) first, fall back to CarIdx.
+        const matchByCust = currentCustId != null && c.CustId === currentCustId;
+        const matchByCarIdx = currentCustId == null && c.CarIdx === currentIdx;
+        if (matchByCust || matchByCarIdx) opt.selected = true;
+        fdSel.appendChild(opt);
+      });
+  } catch (_) {
+    fdSel.innerHTML = '<option value="">— No leaderboard —</option>';
+  }
+
+  // Populate Audio Output — use the live FMOD enumeration endpoint
+  // (same source as Pit Wall Race Room) so both panels stay in sync.
+  const audioSel = document.getElementById("hud-audio-output");
+  try {
+    const devices = await _fetchJson("/api/audio/devices");
+    const devList = (devices && devices.AudioDevices) || [];
+    const currentDev = (devices && devices.audio_output_index != null)
+      ? devices.audio_output_index : 0;
+    audioSel.innerHTML = '';
+    devList.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = d.id;
+      opt.textContent = d.name;
+      if (d.id === currentDev) opt.selected = true;
+      audioSel.appendChild(opt);
+    });
+  } catch (_) {
+    audioSel.innerHTML = '<option value="">— No devices —</option>';
+  }
+
+  // Load system config for toggles (TTS)
+  try {
+    const sysCfg = await _fetchJson("/api/config/system");
+    const tts = document.getElementById("hud-tts");
+    if (tts && sysCfg) tts.classList.toggle("on", sysCfg.enable_tts !== false);
+  } catch (_) {}
+
+  // Load persisted display prefs from localStorage
+  const _displayKeys = ["hud-show-commentary", "hud-show-battles", "hud-show-tower", "hud-show-dotd", "hud-show-ticker"];
+  for (const key of _displayKeys) {
+    const el = document.getElementById(key);
+    if (!el) continue;
+    const stored = localStorage.getItem(key);
+    if (stored !== null) el.classList.toggle("on", stored === "1");
+  }
+}
+
+async function _saveHudSettings() {
+  // Save Focus Driver
+  const fdSel = document.getElementById("hud-focus-driver");
+  const fdOpt = fdSel && fdSel.selectedOptions[0];
+  if (fdOpt && fdOpt.value) {
+    try {
+      const fdPayload = {
+        CarIdx: parseInt(fdOpt.value, 10),
+        CustId: fdOpt.dataset.custId ? parseInt(fdOpt.dataset.custId, 10) : null,
+        Name: fdOpt.dataset.name || "",
+        CarNumber: fdOpt.dataset.carNumber || "",
+      };
+      await fetch("/api/settings/focus_driver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fdPayload),
+      });
+    } catch (_) {}
+  }
+
+  // Save Audio + TTS via system config (syncs to Pit Wall).
+  // IMPORTANT: if the audio dropdown hasn't finished loading yet, its
+  // value is "" — sending that would collapse audio_output_index to 0
+  // (Realtek Digital Output) and silently clobber the user's selection.
+  // Only include audio fields when we have a real selection.
+  const audioSel = document.getElementById("hud-audio-output");
+  const audioSelOpt = audioSel && audioSel.selectedOptions[0];
+  const audioRawVal = audioSel ? audioSel.value : "";
+  const audioIdx = audioRawVal === "" ? null : parseInt(audioRawVal, 10);
+  const audioName = audioSelOpt ? (audioSelOpt.textContent || "").trim() : "";
+  const ttsOn = document.getElementById("hud-tts")?.classList.contains("on") ?? true;
+  const payload = { enable_tts: ttsOn };
+  if (Number.isInteger(audioIdx)) {
+    payload.audio_output_index = audioIdx;
+    if (audioName) payload.audio_output_name = audioName;
+  }
+  try {
+    await fetch("/api/config/system", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (_) {}
+
+  // Persist & apply display toggles
+  const displayMap = {
+    "hud-show-commentary": ".commentary-transcript",
+    "hud-show-battles": ".battle-card",
+    "hud-show-tower": ".timing-tower",
+    "hud-show-dotd": ".dotd-section",
+    "hud-show-ticker": ".ticker",
+  };
+  for (const [toggleId, selector] of Object.entries(displayMap)) {
+    const toggle = document.getElementById(toggleId);
+    if (!toggle) continue;
+    const on = toggle.classList.contains("on");
+    localStorage.setItem(toggleId, on ? "1" : "0");
+    const target = document.querySelector(selector);
+    if (target) target.style.display = on ? "" : "none";
+  }
+
+  // Close
+  document.querySelector('.settings-overlay').classList.remove('open');
+}
+</script>
+
+</body>
+</html>
